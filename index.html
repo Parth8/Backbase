@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Bank · Payment Connector Case Study</title>
+<meta name="description" content="A pre go-live crisis in a banking payments connector, and what it revealed. Forward Deployed Product Manager case study.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- top-left identifier -->
+<div class="brandmark"><b>Grand Central</b> &nbsp;·&nbsp; Payments Connector &nbsp;·&nbsp; Meridian Bank NV</div>
+
+<!-- nav zones -->
+<button class="navzone navzone--left" aria-label="Previous slide">
+  <svg class="navzone__chev" viewBox="0 0 24 24"><polyline points="15 4 7 12 15 20"/></svg>
+</button>
+<button class="navzone navzone--right" aria-label="Next slide">
+  <svg class="navzone__chev" viewBox="0 0 24 24"><polyline points="9 4 17 12 9 20"/></svg>
+</button>
+
+<!-- deck -->
+<main class="deck">
+
+<!-- ===================================================== -->
+<!-- ACT 1 — SETTING THE SCENE                              -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 1 — Title -->
+<section class="slide" id="s1">
+  <div class="wrap">
+    <div class="title-hero">
+      <div class="enter" data-d="1">
+        <div class="eyebrow">Forward Deployed Product Management · Case Study</div>
+      </div>
+      <h1 class="display display--xl enter" data-d="2" style="margin-bottom:0.1em;">
+        The patch was the easy answer.<br>
+        <span class="hi-pine">The pattern</span> was the real problem.
+      </h1>
+      <div class="title-rail enter" data-d="3">
+        <span class="title-rail__node title-rail__node--core"></span>
+        <span class="title-rail__seg"></span>
+        <span class="title-rail__node"></span>
+        <span class="title-rail__seg"></span>
+        <span class="title-rail__node title-rail__node--rail"></span>
+      </div>
+      <p class="lede lede--full enter" data-d="4" style="margin-top:4px;">
+        A banking payments connector, four weeks from go-live, returning failure responses
+        its client cannot read. What looked like a connector defect was a contract that never
+        grew up. This is how I diagnosed it, and what I chose to do about it.
+      </p>
+      <div class="enter" data-d="5" style="margin-top:14px; display:flex; gap:24px; flex-wrap:wrap; font-family:var(--mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);">
+        <span>Grand Central · iPaaS</span>
+        <span>SCT · SCT Inst · SWIFT</span>
+        <span>Wave 1 · UAT Cycle 3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2 — The bank + engagement -->
+<section class="slide" id="s2">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">The Bank</div>
+        <h2 class="display display--l enter" data-d="1">Meridian Bank NV</h2>
+        <p class="prose enter" data-d="2" style="margin-bottom:28px;">
+          A mid-sized retail and SME bank in Amsterdam, modernising its digital layer on Backbase
+          while keeping its Temenos T24 core. Big enough to have real volume and complexity.
+          Small enough that a missed go-live is visible at board level. <strong>Tier-1 banks have
+          buffer. Meridian does not.</strong>
+        </p>
+        <div class="statrow enter" data-d="3" style="margin-bottom:28px;">
+          <div class="stat"><span class="stat__n" data-count="1.4" data-suffix="M">1.4M</span><span class="stat__l">Retail customers</span></div>
+          <div class="stat"><span class="stat__n" data-count="80" data-suffix="K">80K</span><span class="stat__l">SME customers</span></div>
+          <div class="stat"><span class="stat__n" data-count="32" data-prefix="€" data-suffix="B">€32B</span><span class="stat__l">Balance sheet</span></div>
+          <div class="stat stat--pine"><span class="stat__n" data-count="9">9</span><span class="stat__l">Mo. to deliver Wave 1</span></div>
+        </div>
+        <div class="panel panel--inset enter" data-d="4">
+          <div class="kv">
+            <div class="kv__row"><span class="kv__k">Core</span><span class="kv__v"><strong>Temenos T24</strong> · on-prem · 8 years in production · not being replaced</span></div>
+            <div class="kv__row"><span class="kv__k">Why Backbase</span><span class="kv__v">Won the deal promising SCT Inst + SWIFT in Wave 1, in 9 months — against a 12-month in-house estimate for SCT Inst alone</span></div>
+            <div class="kv__row"><span class="kv__k">At stake</span><span class="kv__v">A missed go-live doesn't slip a feature. It breaks the commercial credibility of a 24-month programme</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="5">
+        <p class="figtag" style="margin-bottom:12px;">Fig. 01 — Engagement</p>
+        <p class="marg"><span class="marg__label">My seat</span>Forward Deployed PM, embedded. Joined at the build phase, three months ago.</p>
+        <p class="marg"><span class="marg__label">Not</span>The PM (CSD owns timelines). Not the architect (SA owns the design). Not engineering. I own the product surface at the customer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 — Architecture -->
+<section class="slide" id="s3">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Architecture</div>
+    <h2 class="display display--m enter" data-d="1">One connector. One API. Three rails.</h2>
+    <p class="prose enter" data-d="2" style="margin-bottom:36px; max-width:70ch;">
+      Grand Central is the middleware. The core does the processing; the connector translates and
+      routes. T24 sends one unified instruction and names the rail. The connector is deliberately
+      <strong>dumb</strong> — no routing intelligence, no fallback logic. It translates, submits,
+      and returns.
+    </p>
+
+    <div class="enter" data-d="3">
+    <svg class="diagram" viewBox="0 0 1100 340" role="img" aria-label="Architecture: T24 core connects to Grand Central connector, which routes to three payment rails">
+      <!-- Core -->
+      <rect class="node" x="20" y="120" width="200" height="100" rx="6"/>
+      <text class="node-label" x="120" y="160" text-anchor="middle" font-size="20">T24 Core</text>
+      <text class="node-sub" x="120" y="184" text-anchor="middle" font-size="10">Temenos · on-prem</text>
+
+      <!-- arrow core->connector -->
+      <line class="flow-line" x1="220" y1="170" x2="420" y2="170"/>
+      <polygon points="420,170 410,165 410,175" fill="var(--ink-soft)"/>
+      <text class="node-sub" x="320" y="158" text-anchor="middle" font-size="9.5">POST /payments/initiate</text>
+
+      <!-- Connector -->
+      <rect class="node node--pine" x="420" y="100" width="260" height="140" rx="6"/>
+      <text class="node-label node-label--light" x="550" y="150" text-anchor="middle" font-size="22">Grand Central</text>
+      <text class="node-label node-label--light" x="550" y="176" text-anchor="middle" font-size="14" font-weight="400">Payments Connector v2.0</text>
+      <text class="node-sub" x="550" y="206" text-anchor="middle" font-size="9.5" fill="rgba(242,235,226,0.65)">translate · route · return</text>
+
+      <!-- three rails -->
+      <line class="flow-line" x1="680" y1="170" x2="860" y2="70"/>
+      <line class="flow-line" x1="680" y1="170" x2="860" y2="170"/>
+      <line class="flow-line" x1="680" y1="170" x2="860" y2="270"/>
+
+      <rect class="node" x="860" y="40" width="220" height="64" rx="6"/>
+      <text class="node-label" x="970" y="68" text-anchor="middle" font-size="16">SCT</text>
+      <text class="node-sub" x="970" y="88" text-anchor="middle" font-size="9">SEPA · D+1 batch</text>
+
+      <rect class="node" x="860" y="138" width="220" height="64" rx="6"/>
+      <text class="node-label" x="970" y="166" text-anchor="middle" font-size="16">SCT Inst</text>
+      <text class="node-sub" x="970" y="186" text-anchor="middle" font-size="9">SEPA · 10-sec SLA</text>
+
+      <rect class="node" x="860" y="236" width="220" height="64" rx="6"/>
+      <text class="node-label" x="970" y="264" text-anchor="middle" font-size="16">SWIFT</text>
+      <text class="node-sub" x="970" y="284" text-anchor="middle" font-size="9">cross-border · gpi</text>
+    </svg>
+    </div>
+
+    <div class="cols-3 enter" data-d="4" style="margin-top:36px;">
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:6px;">SCT</p><p class="muted" style="font-size:14px; margin:0;">Standard SEPA credit transfer. Batch, next-day settlement. The forgiving rail.</p></div>
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:6px;">SCT Inst</p><p class="muted" style="font-size:14px; margin:0;">Real-time. A hard 10-second deadline. Timeouts become a first-class failure mode.</p></div>
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:6px;">SWIFT</p><p class="muted" style="font-size:14px; margin:0;">Cross-border, correspondent chains, compliance holds. Failure semantics unlike SEPA.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 — Stakeholders -->
+<section class="slide" id="s4">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">The Room</div>
+        <h2 class="display display--m enter" data-d="1">Who I have to carry</h2>
+        <div class="stake enter" data-d="2" style="margin-top:24px;">
+          <div class="stake__card stake__card--neutral">
+            <div class="stake__badge">H</div>
+            <div><div class="stake__name">Henrik · CTO</div><div class="stake__role">Meridian · reports to board</div></div>
+            <div class="stake__stance">Neutral. Wants confidence, not a moving date.</div>
+          </div>
+          <div class="stake__card stake__card--skeptic">
+            <div class="stake__badge">A</div>
+            <div><div class="stake__name">Anna · Head of Payments</div><div class="stake__role">Reports to COO — can bypass Henrik</div></div>
+            <div class="stake__stance">Skeptical of Backbase. Will escalate any wobble.</div>
+          </div>
+          <div class="stake__card stake__card--swing">
+            <div class="stake__badge">P</div>
+            <div><div class="stake__name">Peter · Head of Eng &amp; Integration</div><div class="stake__role">UAT lead · signed off the spec</div></div>
+            <div class="stake__stance">The swing vote. Fair, technical, persuadable.</div>
+          </div>
+          <div class="stake__card stake__card--ally">
+            <div class="stake__badge">M</div>
+            <div><div class="stake__name">Maria · Payments Ops Lead</div><div class="stake__role">Will run ops from day one</div></div>
+            <div class="stake__stance">Raised this for weeks. UAT just proved her right.</div>
+          </div>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="3">
+        <p class="figtag" style="margin-bottom:12px;">Fig. 02 — My side</p>
+        <p class="marg"><span class="marg__label">Backbase team</span>Me (FDPM), a Solution Architect (now advisory), two engineers on happy-path, a QA lead, and a Customer Success Director who owns the relationship.</p>
+        <p class="marg"><span class="marg__label">Escalation</span>Internally: the VP of Engineering and the connector PM who owns the platform roadmap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- ACT 2 — THE CRISIS                                     -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 5 — Email chain -->
+<section class="slide" id="s5">
+  <div class="wrap">
+    <div class="eyebrow eyebrow--rust enter" data-d="1">The Crisis · Week 9 · Four weeks to go-live</div>
+    <h2 class="display display--m enter" data-d="1" style="margin-bottom:24px;">Four emails in twenty-two hours</h2>
+    <div class="cols-2">
+      <div class="stack-sm">
+        <div class="mail mail--alert enter" data-d="2">
+          <div class="mail__head"><span class="mail__from">Peter Janssen</span><span class="mail__meta">Tue 09:14</span></div>
+          <div class="mail__subj">Payments connector — response inconsistency in failure scenarios</div>
+          <div class="mail__body"><p>47 failures out of 500 in UAT cycle 3. I've highlighted 23 — blank, generic, raw scheme XML, or T24 codes we don't recognise. The other 24 are routable.</p><p><strong>We do not understand the pattern.</strong> We need this resolved before sign-off.</p></div>
+        </div>
+        <div class="mail enter" data-d="3">
+          <div class="mail__head"><span class="mail__from">Engineering Lead · Backbase</span><span class="mail__meta">Tue 15:40</span></div>
+          <div class="mail__subj">RE: response inconsistency</div>
+          <div class="mail__body"><p>The connector is faithfully passing through whatever the core or rail returns. T24 shapes vary, the scheme mixes pain.002 with raw faults, SWIFT correspondents send non-standard codes.</p><p>The connector is handling these <strong>correctly per the v2.0 spec.</strong></p></div>
+        </div>
+      </div>
+      <div class="stack-sm">
+        <div class="mail mail--alert enter" data-d="4">
+          <div class="mail__head"><span class="mail__from">Anna de Wit</span><span class="mail__meta">Tue 18:22</span></div>
+          <div class="mail__subj">RE: response inconsistency</div>
+          <div class="mail__body"><p>If the platform cannot give us consistent responses regardless of what is upstream, the platform is not ready. We cannot go live with this. <strong>Henrik should be aware.</strong></p></div>
+        </div>
+        <div class="mail mail--alert enter" data-d="5" style="border-left:3px solid var(--rust);">
+          <div class="mail__head"><span class="mail__from">Henrik van der Berg · CTO</span><span class="mail__meta">Wed 08:47</span></div>
+          <div class="mail__subj">Payments go-live status</div>
+          <div class="mail__body"><p>I'm told there's a dispute on connector readiness. I need a status update by end of day.</p><p><strong>The go-live date is not moving.</strong> Board commitments in five weeks, marketing already in market. Send me a clear plan.</p></div>
+        </div>
+        <p class="marg enter" data-d="6" style="margin-top:6px;"><span class="marg__label">Where the case opens</span>It is Wednesday morning. I'm the FDPM. The CTO is waiting. And I do not have a diagnosis yet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6 — The data -->
+<section class="slide" id="s6">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">What Peter Sent</div>
+        <h2 class="display display--m enter" data-d="1">500 transactions. 47 failed. 23 unreadable.</h2>
+        <p class="prose enter" data-d="2" style="margin:18px 0 30px;">
+          On the surface, the failures look random — which is exactly why Maria's frustration is
+          legitimate. Her team cannot predict which failures they'll be able to route from the
+          failure itself.
+        </p>
+        <div class="statrow enter" data-d="3" style="margin-bottom:30px;">
+          <div class="stat"><span class="stat__n" data-count="500">500</span><span class="stat__l">UAT transactions</span></div>
+          <div class="stat stat--rust"><span class="stat__n" data-count="47">47</span><span class="stat__l">Failures · 9.4%</span></div>
+          <div class="stat stat--rust"><span class="stat__n" data-count="23">23</span><span class="stat__l">Ops cannot route</span></div>
+        </div>
+        <div class="enter" data-d="4">
+          <table class="tbl" style="max-width:520px;">
+            <thead><tr><th>Response shape</th><th class="num">Count</th><th>What ops sees</th></tr></thead>
+            <tbody>
+              <tr><td class="rowhead u-pine">Structured</td><td class="num">24</td><td class="muted">A code they can act on</td></tr>
+              <tr><td class="rowhead">Partial</td><td class="num">12</td><td class="muted">A code, but no context</td></tr>
+              <tr><td class="rowhead u-rust">Generic</td><td class="num">8</td><td class="muted">Just “PAYMENT_FAILED”</td></tr>
+              <tr><td class="rowhead u-rust">Blank</td><td class="num">3</td><td class="muted">Nothing at all</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="5">
+        <p class="figtag" style="margin-bottom:12px;">Fig. 03 — The dataset</p>
+        <p class="marg"><span class="marg__label">Real artifact</span>500 synthetic transactions with full request &amp; response payloads, plus 301 lines of connector logs, generated for this study.</p>
+        <div class="artifact__group">
+          <a class="artifact" href="resources/meridian_uat_cycle3_transactions.csv" target="_blank" rel="noopener">transactions.csv</a>
+          <a class="artifact" href="resources/meridian_uat_cycle3_connector_logs.csv" target="_blank" rel="noopener">connector_logs.csv</a>
+        </div>
+        <p class="marg"><span class="marg__label">The question</span><em>“We do not understand the pattern.”</em> Peter is senior and technical. If he can't see it, it isn't obvious — or it isn't there. My job is to find out which.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 — Constraints -->
+<section class="slide" id="s7">
+  <div class="wrap">
+    <div class="eyebrow enter" data-d="1">The Box I'm In</div>
+    <h2 class="display display--m enter" data-d="1" style="margin-bottom:8px;">Twenty working days. The date does not move.</h2>
+    <p class="prose enter" data-d="2" style="margin-bottom:32px; max-width:64ch;">
+      Everything I do has to fit inside this, without disrupting an engineering team already at full
+      utilisation on happy-path completion.
+    </p>
+
+    <div class="enter" data-d="3" style="margin-bottom:32px;">
+      <div class="cal">
+        <div class="cal__wk"><div class="cal__wklabel">Week 1</div><div class="cal__cell cal__cell--mark">Today<br>diagnose</div></div>
+        <div class="cal__wk"><div class="cal__wklabel">Week 2</div><div class="cal__cell">Fix +<br>config</div></div>
+        <div class="cal__wk"><div class="cal__wklabel">Week 3</div><div class="cal__cell cal__cell--off">King's Day<br>27 Apr</div></div>
+        <div class="cal__wk"><div class="cal__wklabel">Week 4</div><div class="cal__cell">UAT<br>cycle 4</div></div>
+        <div class="cal__wk"><div class="cal__wklabel">Week 5</div><div class="cal__cell cal__cell--go">Go-live<br>+ board</div></div>
+      </div>
+    </div>
+
+    <div class="cols-2 enter" data-d="4">
+      <div class="panel panel--inset">
+        <p class="figtag u-rust" style="margin-bottom:14px;">Why the date is fixed</p>
+        <ul class="list" style="gap:10px;">
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Board meeting in week 5 — Wave 1 is the evidence of programme health</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Marketing already booked — billboards at Amsterdam Centraal, spend committed</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Wave 2 discovery starts week 6, dependent on this team</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">A commercial milestone payment is tied to Wave 1 acceptance</span></li>
+        </ul>
+      </div>
+      <div class="panel panel--inset">
+        <p class="figtag" style="margin-bottom:14px;">The politics, plainly</p>
+        <ul class="list" style="gap:10px;">
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Engineering is <em>technically right</em> per the spec. Reframing must not read as blame.</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">The SA signed off that spec. Diplomacy required.</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Anna has a board-facing route around Henrik.</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t">Win Peter and he defends the plan for me.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- ACT 3 — THE INVESTIGATION                              -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 8 — Reading before reacting -->
+<section class="slide" id="s8">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">The Investigation · 09:02 Wednesday</div>
+        <h2 class="display display--m enter" data-d="1">I do not write to Henrik first.</h2>
+        <p class="prose enter" data-d="2" style="margin:18px 0 30px;">
+          Most people in this seat answer the CTO immediately. If I write to Henrik without a
+          position, I will either over-promise or hedge — and both cost me credibility I'll need
+          all week. I have until end of day. That is enough time to <strong>understand before I
+          respond.</strong>
+        </p>
+        <ol class="list enter" data-d="3">
+          <li class="list__item"><span class="list__num">1</span><span class="list__t"><strong>Read everything carefully</strong> — the four emails, slowly, not skimming. Anna's framing is sharper than her tone.</span></li>
+          <li class="list__item"><span class="list__num">2</span><span class="list__t"><strong>Open the data before forming a hypothesis.</strong> See it with my own eyes before I trust anyone's read — including engineering's.</span></li>
+          <li class="list__item"><span class="list__num">3</span><span class="list__t"><strong>Align internally before I speak externally.</strong> Engineering, then SA, then CSD. The bank gets the version that's already been pressure-tested.</span></li>
+        </ol>
+      </div>
+      <div class="spread__margin enter" data-d="4">
+        <p class="figtag" style="margin-bottom:12px;">Sequence</p>
+        <p class="marg"><span class="marg__label">Principle</span>Internal alignment before external communication. Engineering before the bank. CSD before Henrik. Get the order wrong and I'm projecting confidence from a house that isn't aligned.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9 — Pivot 1 -->
+<section class="slide" id="s9">
+  <div class="wrap">
+    <div class="eyebrow enter" data-d="1">Slicing · Pivot 1</div>
+    <h2 class="display display--m enter" data-d="1">First cut: response shape by rail</h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 30px; max-width:64ch;">
+      I load the 47 into a notebook — not a dashboard, throwaway analysis. The first pivot already
+      hints at something: <strong class="hi-rust">blank</strong> responses concentrate on the
+      real-time rail, and <strong class="hi-rust">SWIFT</strong> degrades worse than SEPA.
+    </p>
+    <div class="enter" data-d="3" style="max-width:760px;">
+      <table class="tbl">
+        <thead>
+          <tr><th>Payment method</th><th class="num">Structured</th><th class="num">Partial</th><th class="num">Generic</th><th class="num">Blank</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowhead">SCT</td><td class="cell cell--good">10</td><td class="cell cell--warn">6</td><td class="cell cell--bad">2</td><td class="cell cell--bad">1</td></tr>
+          <tr><td class="rowhead">SCT Inst</td><td class="cell cell--good">8</td><td class="cell cell--warn">5</td><td class="cell cell--bad">3</td><td class="cell cell--bad">2</td></tr>
+          <tr><td class="rowhead">SWIFT</td><td class="cell cell--good">6</td><td class="cell cell--warn">1</td><td class="cell cell--bad">3</td><td class="cell cell--0">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:24px; max-width:60ch;"><span class="marg__label">Read</span>Interesting, but not yet conclusive. “Concentrates on a rail” is a hypothesis to test, not an answer. I need a second axis.</p>
+  </div>
+</section>
+
+<!-- SLIDE 10 — Pivot 2 — THE REVEAL -->
+<section class="slide" id="s10">
+  <div class="wrap">
+    <div class="eyebrow eyebrow--rust enter" data-d="1">Slicing · Pivot 2 · The pattern</div>
+    <h2 class="display display--m enter" data-d="1">Second cut: shape by <span class="hi-rust">failure category</span></h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 28px; max-width:66ch;">
+      Pivot on what actually failed, and the randomness collapses. Every category has one coherent
+      response shape. <strong>This is not noise. It is four structural gaps wearing a disguise.</strong>
+    </p>
+    <div class="enter" data-d="3" style="max-width:840px;">
+      <table class="tbl">
+        <thead>
+          <tr><th>Failure category</th><th class="num">Structured</th><th class="num">Partial</th><th class="num">Generic</th><th class="num">Blank</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowhead">Scheme rejection</td><td class="cell cell--good cell--cluster">16</td><td class="cell cell--0">·</td><td class="cell cell--warn">3</td><td class="cell cell--0">·</td></tr>
+          <tr><td class="rowhead">Malformed (caught)</td><td class="cell cell--good cell--cluster">8</td><td class="cell cell--0">·</td><td class="cell cell--0">·</td><td class="cell cell--0">·</td></tr>
+          <tr><td class="rowhead u-rust">Core / T24 code</td><td class="cell cell--0">·</td><td class="cell cell--warn cell--cluster">12</td><td class="cell cell--0">·</td><td class="cell cell--bad">1</td></tr>
+          <tr><td class="rowhead u-rust">Timeout</td><td class="cell cell--0">·</td><td class="cell cell--0">·</td><td class="cell cell--bad cell--cluster">2</td><td class="cell cell--bad cell--cluster">2</td></tr>
+          <tr><td class="rowhead u-rust">Correspondent reject</td><td class="cell cell--0">·</td><td class="cell cell--0">·</td><td class="cell cell--bad cell--cluster">3</td><td class="cell cell--0">·</td></tr>
+          <tr><td class="rowhead u-rust">Compliance / settlement</td><td class="cell cell--0">·</td><td class="cell cell--warn">1</td><td class="cell cell--bad">1</td><td class="cell cell--0">·</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:24px; max-width:66ch;"><span class="marg__label">The turn</span>Peter said he couldn't see a pattern. The pattern is here — it just doesn't live in the failure record. It lives in the <em>relationship</em> between where a failure came from and how the contract let the connector describe it.</p>
+  </div>
+</section>
+
+<!-- SLIDE 11 — What the clustering means -->
+<section class="slide" id="s11">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">Reading the Pattern</div>
+    <h2 class="display display--m enter" data-d="1" style="margin-bottom:28px;">Each shape has a root cause — and a consequence</h2>
+    <div class="cols-4 enter" data-d="2">
+      <div class="panel"><span class="tag tag--pine" style="margin-bottom:12px;"><span class="tag__dot"></span>Structured</span><p style="font-size:15px; margin:0 0 10px;"><strong>Documented scheme rejection.</strong></p><p class="muted" style="font-size:14px; margin:0;">pacs.002 / MT199 with a known code. Ops routes it immediately. The system working.</p></div>
+      <div class="panel"><span class="tag tag--saffron" style="margin-bottom:12px;"><span class="tag__dot"></span>Partial</span><p style="font-size:15px; margin:0 0 10px;"><strong>T24 code, untranslated.</strong></p><p class="muted" style="font-size:14px; margin:0;">The connector has no mapping, so it passes the raw core code through. Ops needs the T24 team.</p></div>
+      <div class="panel"><span class="tag tag--rust" style="margin-bottom:12px;"><span class="tag__dot"></span>Generic</span><p style="font-size:15px; margin:0 0 10px;"><strong>SWIFT downstream / unhandled.</strong></p><p class="muted" style="font-size:14px; margin:0;">Correspondent rejection the connector can't parse. Ops has no escalation path at all.</p></div>
+      <div class="panel" style="border-color:var(--rust-line);"><span class="tag tag--rust" style="margin-bottom:12px;"><span class="tag__dot"></span>Blank</span><p style="font-size:15px; margin:0 0 10px;"><strong>Timeout. Exception swallowed.</strong></p><p class="muted" style="font-size:14px; margin:0;">No response captured. Ops doesn't know if the money moved.</p></div>
+    </div>
+    <div class="panel enter" data-d="3" style="margin-top:28px; border-left:3px solid var(--rust); background:var(--rust-soft);">
+      <p style="margin:0; font-size:18px; line-height:1.55;">
+        <strong class="hi-rust">The blank case is not just a triage problem — it is a financial one.</strong>
+        These are SCT Inst timeouts where payment state is unknown. If ops retries, they risk a
+        duplicate posting. An ambiguous error here can move money twice.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 — API spec evolution diff -->
+<section class="slide" id="s12">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Smoking Gun · Contract Evolution</div>
+    <h2 class="display display--m enter" data-d="1">The request grew. The failure response didn't.</h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 30px; max-width:70ch;">
+      I check why the v2.0 contract is so permissive. The spec didn't appear from nowhere — it
+      evolved. Across three versions of a payments connector, the request side expanded to absorb
+      every new rail. <strong>The failure response barely moved.</strong>
+    </p>
+    <div class="diff3 enter" data-d="3">
+      <div class="diff3__col">
+        <div class="diff3__head"><div class="diff3__ver">v1.0</div><div class="diff3__meta">Apex · SCT only</div></div>
+        <div class="diff3__body">
+          <div class="figtag" style="margin-bottom:8px;">Failure response</div>
+          <div class="diff3__field">status</div>
+          <div class="diff3__field">errorCode <span class="diff3__tag">opt</span></div>
+          <div class="diff3__field">errorMessage <span class="diff3__tag">opt</span></div>
+        </div>
+      </div>
+      <div class="diff3__col">
+        <div class="diff3__head"><div class="diff3__ver">v1.5</div><div class="diff3__meta">Sparkasse · + SCT Inst</div></div>
+        <div class="diff3__body">
+          <div class="figtag" style="margin-bottom:8px;">Failure response</div>
+          <div class="diff3__field--same">status</div>
+          <div class="diff3__field">railName <span class="diff3__tag" style="color:var(--pine);">new</span></div>
+          <div class="diff3__field--same">errorCode <span class="diff3__tag">opt</span></div>
+          <div class="diff3__field--same">errorMessage <span class="diff3__tag">opt</span></div>
+        </div>
+      </div>
+      <div class="diff3__col" style="border-color:var(--rust-line);">
+        <div class="diff3__head" style="background:var(--rust-soft);"><div class="diff3__ver">v2.0</div><div class="diff3__meta">Meridian · + SWIFT</div></div>
+        <div class="diff3__body">
+          <div class="figtag" style="margin-bottom:8px;">Failure response</div>
+          <div class="diff3__field--same">status</div>
+          <div class="diff3__field--same">railName</div>
+          <div class="diff3__field">instructionId <span class="diff3__tag" style="color:var(--pine);">new</span></div>
+          <div class="diff3__field--same">errorCode <span class="diff3__tag">opt</span></div>
+          <div class="diff3__field--same">errorMessage <span class="diff3__tag">opt</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols-2 enter" data-d="4" style="margin-top:30px; gap:40px;">
+      <p class="prose u-mb-0" style="font-size:16px;">Meanwhile the <strong>request</strong> grew from 7 fields to 20+ — agents, addresses, charge bearer, FX, purpose codes — all to serve SWIFT.</p>
+      <p class="prose u-mb-0" style="font-size:16px;">No <span class="hi-rust">origin</span>. No <span class="hi-rust">payment state</span>. No <span class="hi-rust">retryable</span>. The contract describes how to <em>ask</em> in exquisite detail, and how to <em>fail</em> in almost none. <strong>The spec is the gap.</strong></p>
+    </div>
+    <div class="artifact__group enter" data-d="5">
+      <a class="artifact" href="resources/gc-payments-connector-v1.0.yaml" target="_blank" rel="noopener">openapi · v1.0</a>
+      <a class="artifact" href="resources/gc-payments-connector-v1.5.yaml" target="_blank" rel="noopener">openapi · v1.5</a>
+      <a class="artifact" href="resources/gc-payments-connector-v2.0.yaml" target="_blank" rel="noopener">openapi · v2.0</a>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13 — Confluence discovery -->
+<section class="slide" id="s13">
+  <div class="wrap">
+    <div class="eyebrow enter" data-d="1">10:50 · I've seen this before</div>
+    <h2 class="display display--m enter" data-d="1">I didn't remember the pattern. I found it.</h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 28px; max-width:66ch;">
+      The T24-passthrough behaviour rings a bell. I search the connector's Confluence space for
+      <span class="u-mono">“error code”</span> and <span class="u-mono">“timeout.”</span> Two
+      documented, bank-specific patches surface — neither promoted to the platform baseline.
+    </p>
+    <div class="cols-2 enter" data-d="3">
+      <div class="panel">
+        <div class="mail__subj" style="margin-bottom:10px;">⌘ Confluence · 14 months ago</div>
+        <p style="font-weight:600; font-size:17px; margin:0 0 8px;">Apex Banking — Connector Customisation</p>
+        <p class="muted" style="font-size:15px; margin:0 0 12px;">pain.002 reason codes were being stripped from nested XML. The FDPM added a custom response transformer to prefix the code into errorMessage.</p>
+        <span class="tag tag--rust"><span class="tag__dot"></span>Lives in the Apex branch only</span>
+      </div>
+      <div class="panel">
+        <div class="mail__subj" style="margin-bottom:10px;">⌘ Confluence · 6 months ago</div>
+        <p style="font-weight:600; font-size:17px; margin:0 0 8px;">Sparkasse — SCT Inst Timeout Handling</p>
+        <p class="muted" style="font-size:15px; margin:0 0 12px;">A <span class="u-mono">SocketTimeoutException</span> wasn't caught. They wrapped it and returned a fixed “TIMEOUT.” A later comment notes it misses other exception classes.</p>
+        <span class="tag tag--rust"><span class="tag__dot"></span>Lives in Sparkasse config only</span>
+      </div>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:26px; max-width:64ch;"><span class="marg__label">Data-driven, not memory</span>This is the difference between “I think I've seen this” and evidence. I then confirm with the connector PM over Slack: the patches were kept bank-specific because each scope looked different at the time. Nobody saw them as one problem.</p>
+  </div>
+</section>
+
+<!-- SLIDE 14 — Three-bank pattern -->
+<section class="slide" id="s14">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Systemic Signal</div>
+    <h2 class="display display--m enter" data-d="1">Three banks. One gap. It doesn't propagate.</h2>
+    <p class="prose enter" data-d="2" style="margin:14px 0 28px; max-width:72ch;">
+      Each bank forks the base connector. Patches live in the fork; they don't flow back to the
+      baseline unless the connector PM decides they should. So Meridian inherits
+      <strong>none</strong> of what Apex and Sparkasse already solved — and adds SWIFT on top.
+    </p>
+    <div class="enter" data-d="3">
+      <table class="tbl">
+        <thead>
+          <tr><th>Wave</th><th>Bank</th><th>Version</th><th>Rails</th><th>Issue found</th><th>Patch</th><th class="num">To baseline?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="u-mono">0</td><td class="rowhead">Apex · IE</td><td class="u-mono">v1.0</td><td>SCT</td><td class="muted">pain.002 codes stripped</td><td class="muted">XML transformer</td><td class="cell cell--bad">No</td></tr>
+          <tr><td class="u-mono">1</td><td class="rowhead">Sparkasse · DE</td><td class="u-mono">v1.5</td><td>SCT · Inst</td><td class="muted">Socket timeout swallowed</td><td class="muted">Exception handler</td><td class="cell cell--bad">No</td></tr>
+          <tr><td class="u-mono">2</td><td class="rowhead u-rust">Meridian · NL</td><td class="u-mono">v2.0</td><td>SCT · Inst · SWIFT</td><td class="muted">All of the above + SWIFT</td><td class="muted">— pending —</td><td class="cell cell--0">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols-3 enter" data-d="4" style="margin-top:28px;">
+      <div class="panel panel--inset"><p class="figtag u-rust" style="margin-bottom:8px;">Category 1</p><p style="margin:0; font-size:15px;">SCT failures Apex already solved — rediscovered here.</p></div>
+      <div class="panel panel--inset"><p class="figtag u-rust" style="margin-bottom:8px;">Category 2</p><p style="margin:0; font-size:15px;">SCT Inst timeouts Sparkasse already solved — rediscovered here.</p></div>
+      <div class="panel panel--inset"><p class="figtag u-rust" style="margin-bottom:8px;">Category 3</p><p style="margin:0; font-size:15px;">SWIFT failure modes <strong>nobody</strong> has solved. Meridian is the discovery customer.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15 — Connector logs -->
+<section class="slide" id="s15">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">11:45 · Confirming in the Logs</div>
+    <h2 class="display display--m enter" data-d="1">The connector documents its own gap</h2>
+    <p class="prose enter" data-d="2" style="margin:14px 0 26px; max-width:68ch;">
+      Hypotheses aren't proof. I pull two failures and trace them hop by hop. The smoking guns are
+      the connector's own log lines.
+    </p>
+    <div class="cols-2 enter" data-d="3">
+      <div class="code">
+        <div class="code__bar"><span class="code__title">SCT Inst · Blank response</span><span class="code__dot" style="background:var(--rust);"></span></div>
+        <pre class="code__body"><span class="code__line"><span class="code__ln">1</span><span class="t-com">RECEIVED_FROM_CORE      ok</span></span><span class="code__line"><span class="code__ln">2</span><span class="t-com">VALIDATION_PASSED       ok</span></span><span class="code__line"><span class="code__ln">3</span><span class="t-com">ROUTED_TO_RAIL          SCT_INST</span></span><span class="code__line"><span class="code__ln">4</span><span class="t-com">SUBMITTED_TO_RAIL       rt1.eba-clearing.eu</span></span><span class="code__line"><span class="code__ln">5</span><span class="t-num">RAIL_TIMEOUT            10000ms</span></span><span class="code__line code__line--flag"><span class="code__ln">6</span>UNHANDLED_EXCEPTION
+      java.net.ConnectException
+      not caught by handler</span><span class="code__line"><span class="code__ln">7</span><span class="t-com">RETURNED_TO_CORE        empty body</span></span></pre>
+      </div>
+      <div class="code">
+        <div class="code__bar"><span class="code__title">SCT · Partial response</span><span class="code__dot" style="background:var(--saffron);"></span></div>
+        <pre class="code__body"><span class="code__line"><span class="code__ln">1</span><span class="t-com">RECEIVED_FROM_CORE      ok</span></span><span class="code__line"><span class="code__ln">2</span><span class="t-com">VALIDATION_PASSED       ok</span></span><span class="code__line"><span class="code__ln">3</span><span class="t-com">PRECHECK_REQUESTED      T24 balance/acct</span></span><span class="code__line"><span class="code__ln">4</span><span class="t-num">T24_RESPONSE            code: AC.CLOSED</span></span><span class="code__line code__line--flag"><span class="code__ln">5</span>No translation mapping
+      found for T24 code
+      'AC.CLOSED'. Passing
+      through raw.</span><span class="code__line"><span class="code__ln">6</span><span class="t-com">RETURNED_TO_CORE        raw code</span></span></pre>
+      </div>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:24px; max-width:70ch;"><span class="marg__label">What this proves</span>“No translation mapping found … passing through raw” is the connector telling us it knows it has no mapping. It is doing the only thing it can without one. This is not a bug. It is working <em>exactly</em> as specified — and the specification is the problem.</p>
+  </div>
+</section>
+
+<!-- SLIDE 16 — QA defence -->
+<section class="slide" id="s16">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">The Question Everyone Asks</div>
+        <h2 class="display display--m enter" data-d="1">“Why didn't QA catch this?”</h2>
+        <p class="prose enter" data-d="2" style="margin:18px 0 24px;">
+          Because QA did its job. Both Backbase QA and Meridian QA tested against the v2.0 contract.
+          A blank or generic failure is <strong>schema-valid</strong> under v2.0 — every ambiguous
+          response passes every test. You cannot test for a field the contract never required.
+        </p>
+        <div class="panel panel--pine enter" data-d="3">
+          <p style="margin:0; font-size:19px; line-height:1.5;">This is a <strong>product specification gap</strong>, not a QA execution gap. Which makes it mine to own — not a defect to push back on engineering or testing.</p>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="4">
+        <p class="figtag" style="margin-bottom:12px;">Why each bank missed it</p>
+        <p class="marg"><span class="marg__label">Scope, not negligence</span>Apex never ran SCT Inst. Sparkasse never ran SWIFT. Each tested what it had. There was never a shared failure contract to validate across banks — so the gap could only surface where scope finally exceeded it. Here.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- ACT 4 — STAKEHOLDER CONVERSATIONS                      -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 17 — Engineering conversation -->
+<section class="slide" id="s17">
+  <div class="wrap">
+    <div class="eyebrow enter" data-d="1">12:45 · The Engineering Conversation</div>
+    <h2 class="display display--m enter" data-d="1">Same finding. Different politics.</h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 30px; max-width:66ch;">
+      I don't walk in saying they're wrong. I bring the clustering and ask one question: <em>if the
+      connector is handling correctly per spec, does that mean the spec has the gap?</em> The answer
+      is yes. That single reframe changes everything downstream.
+    </p>
+    <div class="twopane--arrow enter" data-d="3">
+      <div class="pane pane--muted">
+        <div class="pane__title" style="color:var(--rust);">Before · a standoff</div>
+        <p style="margin:0 0 14px; font-size:16px;"><strong>Engineering:</strong> “We're handling errors correctly.”</p>
+        <p style="margin:0; font-size:16px;"><strong>Bank:</strong> “Then the platform is not ready.”</p>
+        <p class="muted" style="margin:14px 0 0; font-size:14px;">Two parties defending positions. No path forward.</p>
+      </div>
+      <div class="twopane__arrow">→</div>
+      <div class="pane pane--good">
+        <div class="pane__title">After · a shared problem</div>
+        <p style="margin:0; font-size:16px;"><strong>Both:</strong> “We built to spec. <span class="hi-pine">The spec has a gap.</span>”</p>
+        <p class="muted" style="margin:14px 0 0; font-size:14px;">Now we're looking at the same problem together — and I can ask for their input on the fix without defensiveness. The goodwill I'll need for the long-term work stays intact.</p>
+      </div>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:24px;"><span class="marg__label">Also banked</span>Tentative buy-in that a config-only go-live fix won't touch their sprint. “That's data, not code.”</p>
+  </div>
+</section>
+
+<!-- SLIDE 18 — Stakeholder messages -->
+<section class="slide" id="s18">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">Tailoring the Message</div>
+    <h2 class="display display--m enter" data-d="1">Same facts. Eight different conversations.</h2>
+    <p class="prose enter" data-d="2" style="margin:14px 0 26px; max-width:68ch;">
+      The order matters as much as the content. Internal before external. Engineering before the
+      bank. CSD before Henrik.
+    </p>
+    <div class="enter" data-d="3">
+      <table class="tbl">
+        <thead><tr><th>Stakeholder</th><th>What they need</th><th>What I give them</th><th class="num">When</th></tr></thead>
+        <tbody>
+          <tr><td class="rowhead">Engineering</td><td class="muted">Not to be blamed</td><td>The reframe: spec gap, not defect</td><td class="u-mono">Done</td></tr>
+          <tr><td class="rowhead">CSD</td><td class="muted">No surprises</td><td>The full plan before Henrik sees anything</td><td class="u-mono">Done</td></tr>
+          <tr><td class="rowhead">SA</td><td class="muted">Design ownership</td><td>The v2.5 envelope to lead</td><td class="u-mono">Today</td></tr>
+          <tr><td class="rowhead u-rust">Henrik · CTO</td><td class="muted">Confidence + date safety</td><td>A short status. No root-cause essay.</td><td class="u-mono">Today</td></tr>
+          <tr><td class="rowhead">Peter</td><td class="muted">To defend it himself</td><td>The full diagnostic + go-live plan</td><td class="u-mono">Friday</td></tr>
+          <tr><td class="rowhead">Anna</td><td class="muted">Platform commitment</td><td>Root cause + the v2.5 fix, via Peter</td><td class="u-mono">Friday</td></tr>
+          <tr><td class="rowhead">Maria</td><td class="muted">To run day one</td><td>The ops triage runbook</td><td class="u-mono">Pre-live</td></tr>
+          <tr><td class="rowhead">Connector PM</td><td class="muted">The signal</td><td>P0 intake with three-bank evidence</td><td class="u-mono">This wk</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 19 — Henrik email -->
+<section class="slide" id="s19">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">~15:30 · The Reply to the CTO</div>
+        <h2 class="display display--m enter" data-d="1" style="margin-bottom:22px;">Confidence, not a root-cause essay</h2>
+        <div class="mail mail--cta enter" data-d="2">
+          <div class="mail__head"><span class="mail__from">To: Henrik van der Berg</span><span class="mail__meta">Wed 15:34</span></div>
+          <div class="mail__subj">RE: Payments go-live status</div>
+          <div class="mail__body">
+            <p>Henrik,</p>
+            <p>We've identified the pattern behind the failed transactions. The connector is behaving to its specification; the gap is in how that specification represents failures — it doesn't carry enough structure for your ops team to route every case. It's a known shape of problem, and it's addressable.</p>
+            <p>For go-live: we can resolve the large majority of the ambiguous cases through configuration, with no change to the connector code your integration is already tested against, and no impact to the engineering plan. A small number of edge cases will have a documented manual procedure for Maria's team.</p>
+            <p>In parallel, I'm opening the platform-level fix internally so this is solved properly for Meridian and future releases. <strong>The date holds.</strong> I'll bring Peter the full detail Friday and copy you on the plan.</p>
+            <p>Parth</p>
+          </div>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="3">
+        <p class="figtag" style="margin-bottom:12px;">What I withhold</p>
+        <p class="marg"><span class="marg__label">Deliberately absent</span>The root-cause deep-dive. Engineering's position. The three-bank history. Henrik needs to know I have a grip and his date is safe. Everything else is for the Friday call with Peter.</p>
+        <p class="marg"><span class="marg__label">Tone</span>No blame. No hedging. No over-promise. Under 180 words.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 20 — Peter follow-up -->
+<section class="slide" id="s20">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">Friday · The Call That Carries the Plan</div>
+        <h2 class="display display--m enter" data-d="1">Peter is the swing vote</h2>
+        <p class="prose enter" data-d="2" style="margin:16px 0 26px;">
+          If Peter accepts this, he can defend it to Anna and Henrik without me in the room. So he
+          gets the reasoning, not just the fix.
+        </p>
+        <ol class="list enter" data-d="3">
+          <li class="list__item"><span class="list__num">1</span><span class="list__t"><strong>The clustering</strong> — what we found, shown in his own data</span></li>
+          <li class="list__item"><span class="list__num">2</span><span class="list__t"><strong>The three-bank pattern</strong> — why it recurs, why it's structural</span></li>
+          <li class="list__item"><span class="list__num">3</span><span class="list__t"><strong>The go-live fix</strong> — what changes, what doesn't, what stays open</span></li>
+          <li class="list__item"><span class="list__num">4</span><span class="list__t"><strong>The v2.5 commitment</strong> — the real architectural fix, and its timeline</span></li>
+          <li class="list__item"><span class="list__num">5</span><span class="list__t"><strong>The ask</strong> — what we need from his T24 team to build the mapping</span></li>
+        </ol>
+      </div>
+      <div class="spread__margin enter" data-d="4">
+        <p class="figtag" style="margin-bottom:12px;">And Maria</p>
+        <p class="marg"><span class="marg__label">Credibility repair</span>Maria flagged this for weeks and was deferred to UAT. Naming that — and handing her a real runbook — turns a vindicated skeptic into an ally for day one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- ACT 5 — THE DECISION                                   -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 21 — Engineering's workaround -->
+<section class="slide" id="s21">
+  <div class="wrap">
+    <div class="eyebrow enter" data-d="1">The Decision · The Tempting Wrong Answer</div>
+    <h2 class="display display--m enter" data-d="1">Engineering proposes a client-side fix</h2>
+    <p class="prose enter" data-d="2" style="margin:16px 0 28px; max-width:66ch;">
+      Let Meridian build a response interpreter on the T24 side that normalises whatever the
+      connector returns. Grand Central changes nothing. It's reasonable, it's fast, it protects the
+      date — and it is <strong>exactly what we did at Apex, and at Sparkasse.</strong>
+    </p>
+    <div class="enter" data-d="3" style="margin-bottom:24px;">
+      <div class="boxflow">
+        <div class="boxflow__node"><div class="boxflow__t">Grand Central</div><div class="boxflow__s">unchanged</div></div>
+        <div class="boxflow__arrow">→</div>
+        <div class="boxflow__node" style="border-color:var(--rust-line); background:var(--rust-soft);"><div class="boxflow__t" style="color:var(--rust);">Interpreter</div><div class="boxflow__s">Meridian builds + owns</div></div>
+        <div class="boxflow__arrow">→</div>
+        <div class="boxflow__node boxflow__node--pine"><div class="boxflow__t">T24 Core</div><div class="boxflow__s">normalised</div></div>
+      </div>
+    </div>
+    <div class="panel enter" data-d="4" style="border-left:3px solid var(--rust);">
+      <p style="margin:0; font-size:18px; line-height:1.55;">It isn't lazy. It's <em>structurally consistent</em> with how this platform has always worked — bank-specific code for bank-specific problems. <strong class="hi-rust">And that is precisely why I reject it.</strong> The third instance of an anti-pattern is the moment to break it, not repeat it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 22 — Tradeoff matrix -->
+<section class="slide" id="s22">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Trade-off, Made Explicit</div>
+    <h2 class="display display--m enter" data-d="1">Three options. I'm choosing the un-elegant one.</h2>
+    <div class="enter" data-d="2" style="margin-top:24px;">
+      <table class="tbl">
+        <thead><tr><th>Option</th><th>Fixes</th><th class="num">Eng change</th><th class="num">Regression</th><th class="num">Sprint hit</th><th class="num">Bank effort</th></tr></thead>
+        <tbody>
+          <tr><td class="rowhead u-rust">Client-side workaround</td><td class="muted">Core errors only</td><td class="cell cell--good">None</td><td class="cell cell--good">None</td><td class="cell cell--good">None</td><td class="cell cell--bad">High</td></tr>
+          <tr style="background:var(--pine-soft);"><td class="rowhead u-pine">Config expansion ✓</td><td class="muted">Core + rail · ~80–90%</td><td class="cell cell--good">None</td><td class="cell cell--good">None</td><td class="cell cell--good">None</td><td class="cell cell--warn">Medium</td></tr>
+          <tr><td class="rowhead">Connector code change</td><td class="muted">All three layers</td><td class="cell cell--bad">Yes</td><td class="cell cell--bad">Medium</td><td class="cell cell--bad">High</td><td class="cell cell--good">Low</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols-2 enter" data-d="3" style="margin-top:28px; gap:40px;">
+      <p class="prose u-mb-0" style="font-size:16px;">The config route doesn't solve origin tagging, and it leaves the three blank timeouts open. But it gives ops <strong>80–90% coverage</strong> with no code change, no regression cycle, and no disruption to a fully-loaded team.</p>
+      <p class="prose u-mb-0" style="font-size:16px;">I will <strong>not</strong> push connector changes into a sprint 20 days from go-live. The risk to the date is real, and I need engineering's goodwill for the fix that actually matters. <span class="hi-pine">Judgment, not perfection.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 23 — Config file -->
+<section class="slide" id="s23">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Go-Live Fix · Made Concrete</div>
+    <h2 class="display display--m enter" data-d="1">Config + connector = the integration entity</h2>
+    <p class="prose enter" data-d="2" style="margin:14px 0 26px; max-width:70ch;">
+      Two of the three error layers can be fully standardised — rail and connector errors. The core
+      layer cannot: every bank's T24 is different. So the canonical <em>shape</em> is the platform
+      contract; the core <em>mapping</em> is bank-owned configuration. Here is that file.
+    </p>
+    <div class="cols-2 enter" data-d="3" style="gap:28px; align-items:start;">
+      <div class="code">
+        <div class="code__bar"><span class="code__title">gc_error_mapping_config · v2</span><span class="code__dot"></span></div>
+        <pre class="code__body"><span class="t-punc">{</span>
+  <span class="t-key">"t24_core"</span><span class="t-punc">: {</span>
+    <span class="t-key">"AC.CLOSED"</span><span class="t-punc">: {</span>
+      <span class="t-key">"canonical"</span><span class="t-punc">:</span> <span class="t-str">"ACCOUNT_CLOSED"</span><span class="t-punc">,</span>
+      <span class="t-key">"origin"</span><span class="t-punc">:</span> <span class="t-str">"CORE"</span><span class="t-punc">,</span>
+      <span class="t-key">"paymentState"</span><span class="t-punc">:</span> <span class="t-str">"REJECTED"</span><span class="t-punc">,</span>
+      <span class="t-key">"retryable"</span><span class="t-punc">:</span> <span class="t-num">false</span><span class="t-punc">,</span>
+      <span class="t-key">"opsAction"</span><span class="t-punc">:</span> <span class="t-str">"NOTIFY_CUSTOMER"</span>
+    <span class="t-punc">},</span>
+    <span class="t-key">"OFAC.HOLD"</span><span class="t-punc">: {</span>
+      <span class="t-key">"canonical"</span><span class="t-punc">:</span> <span class="t-str">"OFAC_HOLD"</span><span class="t-punc">,</span>
+      <span class="t-key">"paymentState"</span><span class="t-punc">:</span> <span class="t-str">"HOLD"</span><span class="t-punc">,</span>
+      <span class="t-key">"opsAction"</span><span class="t-punc">:</span> <span class="t-str">"ESCALATE_COMPLIANCE"</span><span class="t-punc">,</span>
+      <span class="t-key">"slaMinutes"</span><span class="t-punc">:</span> <span class="t-num">15</span>
+    <span class="t-punc">}</span>
+  <span class="t-punc">},</span>
+  <span class="t-key">"fallback"</span><span class="t-punc">: {</span>
+    <span class="t-key">"canonical"</span><span class="t-punc">:</span> <span class="t-str">"UNRESOLVED_ERROR"</span><span class="t-punc">,</span>
+    <span class="t-key">"origin"</span><span class="t-punc">:</span> <span class="t-str">"UNKNOWN"</span>
+  <span class="t-punc">}</span>
+<span class="t-punc">}</span></pre>
+      </div>
+      <div class="stack-md">
+        <div class="panel"><p class="figtag u-pine" style="margin-bottom:8px;">Rail · fully standard</p><p class="muted" style="margin:0; font-size:15px;">66 SEPA + 19 SWIFT codes. Finite, regulated, identical for every bank. The connector owns translation 100%.</p></div>
+        <div class="panel"><p class="figtag u-pine" style="margin-bottom:8px;">Connector · fully standard</p><p class="muted" style="margin:0; font-size:15px;">12 codes — the connector's own exceptions, including the three timeout classes differentiated by retry-safety.</p></div>
+        <div class="panel" style="border-color:var(--saffron);"><p class="figtag" style="color:#8a5e11; margin-bottom:8px;">Core · bank-owned config</p><p class="muted" style="margin:0; font-size:15px;">36 T24 codes for Meridian. Unmapped codes hit the fallback with the raw code preserved — always a valid envelope, never a blank.</p></div>
+      </div>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:22px; max-width:74ch;"><span class="marg__label">134 entries · real artifact in the repo</span>The compliance codes carry do-not-notify-customer notes and 15-minute SLAs. That operational nuance is the difference between an error map and an ops tool.</p>
+    <div class="artifact__group enter" data-d="4">
+      <a class="artifact" href="resources/gc_error_mapping_config_v2.json" target="_blank" rel="noopener">gc_error_mapping_config_v2.json</a>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 24 — Error packet contract -->
+<section class="slide" id="s24">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">The Long-Term Fix · v2.5 Envelope</div>
+        <h2 class="display display--s enter" data-d="1" style="margin-bottom:10px;">The canonical error packet</h2>
+        <p class="prose enter" data-d="2" style="margin-bottom:22px; font-size:16px;">
+          Not a dictionary of every error — a <strong>shape</strong> every error must conform to.
+          Origin comes from the connector's own call graph, never guessed from content.
+        </p>
+        <div class="code enter" data-d="3">
+          <div class="code__bar"><span class="code__title">Failure envelope · v2.5</span><span class="code__dot"></span></div>
+          <pre class="code__body"><span class="t-punc">{</span>
+  <span class="t-key">"paymentId"</span><span class="t-punc">:</span> <span class="t-str">"MER-PAY-20250317-000202"</span><span class="t-punc">,</span>
+  <span class="t-key">"origin"</span><span class="t-punc">:</span> <span class="t-str">"CORE"</span><span class="t-punc">,</span>
+  <span class="t-key">"code"</span><span class="t-punc">:</span> <span class="t-str">"CORE_ERROR"</span><span class="t-punc">,</span>
+  <span class="t-key">"reason"</span><span class="t-punc">:</span> <span class="t-str">"Core returned an error. See rawCode."</span><span class="t-punc">,</span>
+  <span class="t-key">"paymentState"</span><span class="t-punc">:</span> <span class="t-str">"REJECTED"</span><span class="t-punc">,</span>
+  <span class="t-key">"retryable"</span><span class="t-punc">:</span> <span class="t-num">false</span><span class="t-punc">,</span>
+  <span class="t-key">"opsAction"</span><span class="t-punc">:</span> <span class="t-str">"INVESTIGATE_CORE"</span><span class="t-punc">,</span>
+  <span class="t-key">"rawCode"</span><span class="t-punc">:</span> <span class="t-str">"EB-CHK-VAL-001"</span><span class="t-punc">,</span>
+  <span class="t-key">"railCode"</span><span class="t-punc">:</span> <span class="t-num">null</span><span class="t-punc">,</span>
+  <span class="t-key">"timestamp"</span><span class="t-punc">:</span> <span class="t-str">"2025-03-17T11:11:08.883Z"</span>
+<span class="t-punc">}</span></pre>
+        </div>
+      </div>
+      <div class="spread__margin enter" data-d="4">
+        <p class="figtag" style="margin-bottom:12px;">Five origins</p>
+        <p class="marg"><span class="marg__label">Deterministic</span><span class="u-mono" style="font-size:13px;">CORE · CONNECTOR · RAIL · TIMEOUT · UNKNOWN</span></p>
+        <p class="marg">The connector knows which endpoint it called and whether a response came back. Origin is derived from that — not inferred from the error text.</p>
+        <p class="marg"><span class="marg__label">Not v3</span>No new payment method. A response-contract enhancement to v2.0 — which keeps the migration surface small.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 25 — pain.001 -->
+<section class="slide" id="s25">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">Built on the Standard · ISO 20022</div>
+    <h2 class="display display--m enter" data-d="1">The connector already speaks pain.001</h2>
+    <p class="prose enter" data-d="2" style="margin:14px 0 26px; max-width:70ch;">
+      The request contract wasn't invented in isolation. Its field names mirror ISO 20022
+      <span class="u-mono">pain.001</span> — the standard payment-initiation message. The discipline
+      that shaped the request side is exactly what the failure side never received.
+    </p>
+    <div class="twopane--arrow enter" data-d="3">
+      <div class="pane pane--muted">
+        <div class="pane__title" style="color:var(--ink-soft);">ISO 20022 · pain.001</div>
+        <pre class="code__body" style="background:none; padding:0; font-size:13px;"><span class="t-punc">CstmrCdtTrfInitn</span>
+  GrpHdr › <span class="t-key">MsgId</span>
+  PmtInf
+    <span class="t-key">PmtMtd</span>  TRF
+    Dbtr › <span class="t-key">Nm</span>
+    DbtrAcct › <span class="t-key">IBAN</span>
+    DbtrAgt › <span class="t-key">BICFI</span>
+    CdtTrfTxInf
+      PmtId › <span class="t-key">EndToEndId</span>
+      Amt › <span class="t-key">InstdAmt</span>
+      CdtrAgt › <span class="t-key">BICFI</span>
+      Cdtr › <span class="t-key">Nm</span></pre>
+      </div>
+      <div class="twopane__arrow">→</div>
+      <div class="pane pane--good">
+        <div class="pane__title">Grand Central · v2.0 request</div>
+        <pre class="code__body" style="background:none; padding:0; font-size:13px;"><span class="t-punc">PaymentInitiation</span>
+  <span class="t-key">paymentId</span>
+  <span class="t-key">paymentMethod</span>  SCT · INST · SWIFT
+  debtor › <span class="t-key">name</span>
+  debtor › <span class="t-key">account</span>
+  <span class="t-key">debtorAgent.bic</span>
+  <span class="t-key">endToEndId</span>
+  <span class="t-key">instructedAmount</span>
+  <span class="t-key">creditorAgent.bic</span>
+  creditor › <span class="t-key">name</span>
+  <span class="t-com">+ instructionId, serviceLevel…</span></pre>
+      </div>
+    </div>
+    <p class="marg enter" data-d="4" style="margin-top:22px;"><span class="marg__label">The point</span>A reviewer fluent in payments sees a connector designed <em>with</em> the standard. The asymmetry — rigorous request, threadbare failure — is the whole case in one comparison.</p>
+  </div>
+</section>
+
+<!-- SLIDE 26 — v2.5 internal motion -->
+<section class="slide" id="s26">
+  <div class="wrap">
+    <div class="spread">
+      <div class="spread__main">
+        <div class="eyebrow enter" data-d="1">Doing Something With the Signal</div>
+        <h2 class="display display--m enter" data-d="1">I don't wait for v2.5 to start it</h2>
+        <p class="prose enter" data-d="2" style="margin:16px 0 26px;">
+          The third occurrence is the signal. An API redesign touches every bank on the connector,
+          so it can't be a hallway decision — it needs a real intake.
+        </p>
+        <ol class="list enter" data-d="3">
+          <li class="list__item"><span class="list__num">›</span><span class="list__t"><strong>Connector PM</strong> — file it P0 with three-bank evidence, not one anecdote</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t"><strong>Solution Architect</strong> — owns the envelope design, runs in parallel to go-live</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t"><strong>Engineering + QA</strong> — feasibility, effort, the test contract that must now require origin</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t"><strong>Roadmap</strong> — reprioritise for the release after go-live</span></li>
+          <li class="list__item"><span class="list__num">›</span><span class="list__t"><strong>Migration</strong> — Apex and Sparkasse fold in over their maintenance windows</span></li>
+        </ol>
+      </div>
+      <div class="spread__margin enter" data-d="4">
+        <p class="figtag" style="margin-bottom:12px;">The endgame</p>
+        <p class="marg"><span class="marg__label">Bank 4</span>The next implementation inherits the envelope at the baseline. It never rediscovers what Apex, Sparkasse and Meridian each paid to learn. <strong>The pattern ends here.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- ACT 6 — THE RESOLUTION                                 -->
+<!-- ===================================================== -->
+
+<!-- SLIDE 27 — Before / after ops -->
+<section class="slide" id="s27">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Resolution · What Maria's Team Sees</div>
+    <h2 class="display display--m enter" data-d="1">From confusion to an action</h2>
+    <div class="twopane enter" data-d="2" style="margin-top:24px;">
+      <div class="pane pane--muted">
+        <div class="pane__title" style="color:var(--rust);">Before · the 23 ambiguous cases</div>
+        <table class="tbl" style="font-size:13px;">
+          <tbody>
+            <tr><td class="u-mono muted">AC.CLOSED</td><td class="muted">— raw code, no guidance —</td></tr>
+            <tr><td class="u-mono muted">PAYMENT_FAILED</td><td class="muted">— generic, no origin —</td></tr>
+            <tr><td class="u-mono muted">(blank)</td><td class="muted">— nothing —</td></tr>
+            <tr><td class="u-mono muted">PAYMENT_FAILED</td><td class="muted">— generic, no origin —</td></tr>
+            <tr><td class="u-mono muted">AC.CLOSED</td><td class="muted">— raw code, no guidance —</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin:14px 0 0; font-size:14px;">Every one becomes a manual investigation. Unpredictable. Unscalable.</p>
+      </div>
+      <div class="pane pane--good">
+        <div class="pane__title">After · config in place</div>
+        <table class="tbl" style="font-size:13px;">
+          <tbody>
+            <tr><td class="u-mono u-pine">ACCOUNT_CLOSED</td><td>Notify customer · don't retry</td></tr>
+            <tr><td class="u-mono u-rust">CORRESPONDENT_REJECT</td><td>Escalate · scheme ops</td></tr>
+            <tr><td class="u-mono u-saffron">RAIL_TIMEOUT</td><td>Investigate · do <em>not</em> retry</td></tr>
+            <tr><td class="u-mono u-rust">OFAC_HOLD</td><td>Compliance · 15-min SLA</td></tr>
+            <tr><td class="u-mono u-pine">INSUFFICIENT_FUNDS</td><td>Notify customer · don't retry</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin:14px 0 0; font-size:14px;">Meaning, origin where known, and a next action. Routable on sight.</p>
+      </div>
+    </div>
+    <p class="marg enter" data-d="3" style="margin-top:22px; max-width:72ch;"><span class="marg__label">Honest framing</span>The config makes errors <em>actionable</em>. It does not yet make the architecture fully <em>observable</em> — origin tagging is the v2.5 work. Ops can live with actionable-not-observable for a go-live window. They cannot live with neither, which is what they have today.</p>
+  </div>
+</section>
+
+<!-- SLIDE 28 — What changes for go-live -->
+<section class="slide" id="s28">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">What I Commit To</div>
+    <h2 class="display display--m enter" data-d="1">Go-live, concretely</h2>
+    <div class="cols-2 enter" data-d="2" style="margin-top:24px; gap:36px;">
+      <div class="stack-md">
+        <div class="panel panel--inset"><p class="figtag u-pine" style="margin-bottom:8px;">Covered</p><ul class="list" style="gap:8px;"><li class="list__item"><span class="list__num">›</span><span class="list__t">Top T24 codes mapped by Meridian's team with our support</span></li><li class="list__item"><span class="list__num">›</span><span class="list__t">All SEPA + SWIFT documented codes in config</span></li><li class="list__item"><span class="list__num">›</span><span class="list__t">UAT cycle 4 targeted at the 23 cases, not a full regression</span></li><li class="list__item"><span class="list__num">›</span><span class="list__t">Ops runbook: escalation path per origin</span></li></ul></div>
+      </div>
+      <div class="stack-md">
+        <div class="panel panel--inset" style="border-left:3px solid var(--rust);"><p class="figtag u-rust" style="margin-bottom:8px;">Known open item</p><p style="margin:0; font-size:15px;">The three blank timeout responses remain unresolved by config. Maria's team gets a documented manual procedure: confirm payment state via scheme inquiry before any retry. <strong>Named, not hidden.</strong></p></div>
+        <div class="panel panel--inset"><p class="figtag u-pine" style="margin-bottom:8px;">Rollback</p><p style="margin:0; font-size:15px;">The config is additive. Reverting is a config change, not a code change — <strong>zero regression risk.</strong></p></div>
+      </div>
+    </div>
+    <div class="enter" data-d="3" style="margin-top:24px;">
+      <div class="boxflow">
+        <div class="boxflow__node"><div class="boxflow__t" style="font-size:14px;">CORE error</div><div class="boxflow__s">→ T24 team</div></div>
+        <div class="boxflow__arrow"></div>
+        <div class="boxflow__node"><div class="boxflow__t" style="font-size:14px;">RAIL error</div><div class="boxflow__s">→ scheme ops</div></div>
+        <div class="boxflow__arrow"></div>
+        <div class="boxflow__node"><div class="boxflow__t" style="font-size:14px;">CONNECTOR error</div><div class="boxflow__s">→ Backbase support</div></div>
+        <div class="boxflow__arrow"></div>
+        <div class="boxflow__node"><div class="boxflow__t" style="font-size:14px;">HOLD</div><div class="boxflow__s">→ compliance</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 29 — Post go-live roadmap -->
+<section class="slide" id="s29">
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">After the Date</div>
+    <h2 class="display display--m enter" data-d="1">Go-live is where the learning starts</h2>
+    <div class="enter" data-d="2" style="margin-top:28px;">
+      <svg class="diagram" viewBox="0 0 1100 150" role="img" aria-label="Roadmap timeline from go-live through v2.5 to migration">
+        <line class="flow-line" x1="40" y1="75" x2="1060" y2="75" stroke-width="1"/>
+        <!-- nodes -->
+        <circle cx="120" cy="75" r="7" fill="var(--pine)"/>
+        <text class="node-label" x="120" y="48" text-anchor="middle" font-size="15">Go-live</text>
+        <text class="node-sub" x="120" y="108" text-anchor="middle" font-size="9.5">Week 5 · config live</text>
+
+        <circle cx="400" cy="75" r="7" fill="var(--saffron)"/>
+        <text class="node-label" x="400" y="48" text-anchor="middle" font-size="15">v2.5 design</text>
+        <text class="node-sub" x="400" y="108" text-anchor="middle" font-size="9.5">SA-led · parallel</text>
+
+        <circle cx="680" cy="75" r="7" fill="var(--saffron)"/>
+        <text class="node-label" x="680" y="48" text-anchor="middle" font-size="15">v2.5 release</text>
+        <text class="node-sub" x="680" y="108" text-anchor="middle" font-size="9.5">envelope is baseline</text>
+
+        <circle cx="960" cy="75" r="7" fill="var(--pine)"/>
+        <text class="node-label" x="960" y="48" text-anchor="middle" font-size="15">Migration</text>
+        <text class="node-sub" x="960" y="108" text-anchor="middle" font-size="9.5">Apex · Sparkasse</text>
+      </svg>
+    </div>
+    <div class="cols-3 enter" data-d="3" style="margin-top:28px;">
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:8px;">The feedback loop</p><p class="muted" style="margin:0; font-size:15px;">Unmapped core codes surface in monitoring, get added to config each maintenance cycle. The known universe grows; the unknown shrinks.</p></div>
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:8px;">Existing customers</p><p class="muted" style="margin:0; font-size:15px;">Apex and Sparkasse migrate to the envelope — their orphaned patches become inputs to the platform standard.</p></div>
+      <div class="panel"><p class="figtag u-pine" style="margin-bottom:8px;">Future customers</p><p class="muted" style="margin:0; font-size:15px;">Bank 4 certifies against the envelope by default. The contract finally treats failure as a first-class concern.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 30 — Closing -->
+<section class="slide" id="s30">
+  <div class="wrap wrap--narrow">
+    <div class="title-hero" style="text-align:center;">
+      <div class="enter" data-d="1" style="display:flex; justify-content:center;">
+        <div class="title-rail" style="max-width:280px; width:100%;">
+          <span class="title-rail__node title-rail__node--core"></span>
+          <span class="title-rail__seg"></span>
+          <span class="title-rail__node"></span>
+          <span class="title-rail__seg"></span>
+          <span class="title-rail__node title-rail__node--rail"></span>
+        </div>
+      </div>
+      <h2 class="display display--l enter" data-d="2" style="margin:8px 0;">
+        The patch was always the easy answer.<br>
+        <span class="hi-pine">The pattern</span> was the real problem.
+      </h2>
+      <p class="lede enter" data-d="3" style="margin:8px auto 0; max-width:54ch;">
+        A connector that fails clearly is worth more than one that succeeds quietly. The job wasn't
+        to make the error go away — it was to make the next bank never see it.
+      </p>
+      <div class="enter" data-d="4" style="margin-top:26px; font-family:var(--mono); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft);">
+        Parth · Forward Deployed Product Manager · Grand Central
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- bottom rail signature -->
+<div class="rail" aria-hidden="true">
+  <div class="rail__line">
+    <div class="rail__progress"></div>
+    <div class="rail__nodes">
+      <button class="rail__node" data-state="active" aria-label="Act 1: Setting the Scene"><span class="rail__tip">01 · Setting the Scene</span><span class="rail__dot"></span></button>
+      <button class="rail__node" aria-label="Act 2: The Crisis"><span class="rail__tip">02 · The Crisis</span><span class="rail__dot"></span></button>
+      <button class="rail__node" aria-label="Act 3: The Investigation"><span class="rail__tip">03 · The Investigation</span><span class="rail__dot"></span></button>
+      <button class="rail__node" aria-label="Act 4: Stakeholders"><span class="rail__tip">04 · Stakeholders</span><span class="rail__dot"></span></button>
+      <button class="rail__node" aria-label="Act 5: The Decision"><span class="rail__tip">05 · The Decision</span><span class="rail__dot"></span></button>
+      <button class="rail__node" aria-label="Act 6: The Resolution"><span class="rail__tip">06 · The Resolution</span><span class="rail__dot"></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- corner meta -->
+<div class="meta" aria-hidden="true">
+  <div class="meta__num"><b>01</b> / 30</div>
+  <div class="meta__act">Setting the Scene</div>
+</div>
+
+<script src="assets/js/presentation.js"></script>
+<script src="assets/js/animations.js"></script>
+</body>
+</html>
