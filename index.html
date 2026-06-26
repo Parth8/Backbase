@@ -801,40 +801,66 @@
   </div>
 </section>
 
-<!-- SLIDE 24 — Error packet contract -->
+<!-- SLIDE 24 — Error packet before/after -->
 <section class="slide" id="s24">
-  <div class="wrap">
-    <div class="spread">
-      <div class="spread__main">
-        <div class="eyebrow enter" data-d="1">The Long-Term Fix · v2.5 Envelope</div>
-        <h2 class="display display--s enter" data-d="1" style="margin-bottom:10px;">The canonical error packet</h2>
-        <p class="prose enter" data-d="2" style="margin-bottom:22px; font-size:16px;">
-          Not a dictionary of every error — a <strong>shape</strong> every error must conform to.
-          Origin comes from the connector's own call graph, never guessed from content.
-        </p>
-        <div class="code enter" data-d="3">
-          <div class="code__bar"><span class="code__title">Failure envelope · v2.5</span><span class="code__dot"></span></div>
-          <pre class="code__body"><span class="t-punc">{</span>
-  <span class="t-key">"paymentId"</span><span class="t-punc">:</span> <span class="t-str">"MER-PAY-20250317-000202"</span><span class="t-punc">,</span>
-  <span class="t-key">"origin"</span><span class="t-punc">:</span> <span class="t-str">"CORE"</span><span class="t-punc">,</span>
-  <span class="t-key">"code"</span><span class="t-punc">:</span> <span class="t-str">"CORE_ERROR"</span><span class="t-punc">,</span>
-  <span class="t-key">"reason"</span><span class="t-punc">:</span> <span class="t-str">"Core returned an error. See rawCode."</span><span class="t-punc">,</span>
-  <span class="t-key">"paymentState"</span><span class="t-punc">:</span> <span class="t-str">"REJECTED"</span><span class="t-punc">,</span>
-  <span class="t-key">"retryable"</span><span class="t-punc">:</span> <span class="t-num">false</span><span class="t-punc">,</span>
-  <span class="t-key">"opsAction"</span><span class="t-punc">:</span> <span class="t-str">"INVESTIGATE_CORE"</span><span class="t-punc">,</span>
-  <span class="t-key">"rawCode"</span><span class="t-punc">:</span> <span class="t-str">"EB-CHK-VAL-001"</span><span class="t-punc">,</span>
-  <span class="t-key">"railCode"</span><span class="t-punc">:</span> <span class="t-num">null</span><span class="t-punc">,</span>
-  <span class="t-key">"timestamp"</span><span class="t-punc">:</span> <span class="t-str">"2025-03-17T11:11:08.883Z"</span>
+  <div class="wrap wrap--wide">
+    <div class="eyebrow enter" data-d="1">The Long-Term Fix · v2.5 Envelope</div>
+    <h2 class="display display--s enter" data-d="1" style="margin-bottom:6px;">Same failure. Two very different responses.</h2>
+    <p class="prose enter" data-d="2" style="margin-bottom:24px; font-size:15px; max-width:78ch;">
+      Scenario: SCT payment. T24 pre-flight check returns account-closed.
+      The connector receives it, translates it, returns it to the core.
+      <strong>Here is what ops receives today, and what they would receive under v2.5.</strong>
+    </p>
+    <div class="twopane enter" data-d="3">
+      <div class="pane pane--muted">
+        <div class="pane__title" style="color:var(--rust); justify-content:space-between;">
+          <span>Today · v2.0</span>
+          <span class="tag tag--rust" style="font-size:9px; padding:3px 8px;">ops cannot route</span>
+        </div>
+        <pre class="code__body" style="background:none; padding:0; font-size:12.5px; line-height:1.75;"><span class="t-punc">{</span>
+  <span class="t-key">"paymentId"</span><span class="t-punc">:</span> <span class="t-str">"MER-PAY-20250317-000211"</span><span class="t-punc">,</span>
+  <span class="t-key">"gcTransactionId"</span><span class="t-punc">:</span> <span class="t-str">"gc-ccdd3344..."</span><span class="t-punc">,</span>
+  <span class="t-key">"status"</span><span class="t-punc">:</span> <span class="t-str">"FAILED"</span><span class="t-punc">,</span>
+  <span class="t-key">"railName"</span><span class="t-punc">:</span> <span class="t-str">""</span><span class="t-punc">,</span>
+  <span class="t-key">"errorCode"</span><span class="t-punc">:</span> <span class="t-str">"AC.CLOSED"</span><span class="t-punc">,</span>
+  <span class="t-key">"errorMessage"</span><span class="t-punc">:</span> <span class="t-str">"Core rejected: AC.CLOSED"</span><span class="t-punc">,</span>
+  <span class="t-key">"failedTimestamp"</span><span class="t-punc">:</span> <span class="t-str">"2025-03-17T11:11:08.883Z"</span>
 <span class="t-punc">}</span></pre>
+        <div style="margin-top:16px; display:grid; gap:7px;">
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--rust); font-size:16px;">✗</span> <span class="muted">Where did this fail? Core, connector, or rail?</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--rust); font-size:16px;">✗</span> <span class="muted">What does AC.CLOSED mean? Who knows?</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--rust); font-size:16px;">✗</span> <span class="muted">Is retry safe? Unknown.</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--rust); font-size:16px;">✗</span> <span class="muted">Who does ops call? No guidance.</span></div>
         </div>
       </div>
-      <div class="spread__margin enter" data-d="4">
-        <p class="figtag" style="margin-bottom:12px;">Five origins</p>
-        <p class="marg"><span class="marg__label">Deterministic</span><span class="u-mono" style="font-size:13px;">CORE · CONNECTOR · RAIL · TIMEOUT · UNKNOWN</span></p>
-        <p class="marg">The connector knows which endpoint it called and whether a response came back. Origin is derived from that — not inferred from the error text.</p>
-        <p class="marg"><span class="marg__label">Not v3</span>No new payment method. A response-contract enhancement to v2.0 — which keeps the migration surface small.</p>
+      <div class="pane pane--good">
+        <div class="pane__title" style="justify-content:space-between;">
+          <span>Proposed · v2.5</span>
+          <span class="tag tag--pine" style="font-size:9px; padding:3px 8px;">routable on sight</span>
+        </div>
+        <pre class="code__body" style="background:none; padding:0; font-size:12.5px; line-height:1.75;"><span class="t-punc">{</span>
+  <span class="t-key">"paymentId"</span><span class="t-punc">:</span> <span class="t-str">"MER-PAY-20250317-000211"</span><span class="t-punc">,</span>
+  <span class="t-key">"origin"</span><span class="t-punc">:</span> <span class="t-str"><strong>"CORE"</strong></span><span class="t-punc">,</span>
+  <span class="t-key">"code"</span><span class="t-punc">:</span> <span class="t-str"><strong>"ACCOUNT_CLOSED"</strong></span><span class="t-punc">,</span>
+  <span class="t-key">"reason"</span><span class="t-punc">:</span> <span class="t-str">"Debtor account is closed in T24."</span><span class="t-punc">,</span>
+  <span class="t-key">"paymentState"</span><span class="t-punc">:</span> <span class="t-str"><strong>"REJECTED"</strong></span><span class="t-punc">,</span>
+  <span class="t-key">"retryable"</span><span class="t-punc">:</span> <span class="t-num"><strong>false</strong></span><span class="t-punc">,</span>
+  <span class="t-key">"opsAction"</span><span class="t-punc">:</span> <span class="t-str"><strong>"NOTIFY_CUSTOMER"</strong></span><span class="t-punc">,</span>
+  <span class="t-key">"rawCode"</span><span class="t-punc">:</span> <span class="t-str">"AC.CLOSED"</span><span class="t-punc">,</span>
+  <span class="t-key">"failedTimestamp"</span><span class="t-punc">:</span> <span class="t-str">"2025-03-17T11:11:08.883Z"</span>
+<span class="t-punc">}</span></pre>
+        <div style="margin-top:16px; display:grid; gap:7px;">
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--pine); font-size:16px;">✓</span> <span class="muted">Origin: <strong>CORE</strong> — escalate to T24 team, not scheme ops</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--pine); font-size:16px;">✓</span> <span class="muted">Plain English: "Debtor account is closed in T24."</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--pine); font-size:16px;">✓</span> <span class="muted">Retry: <strong>false</strong> — don't queue it again</span></div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:13px;"><span style="color:var(--pine); font-size:16px;">✓</span> <span class="muted">Action: <strong>NOTIFY_CUSTOMER</strong> — unambiguous next step</span></div>
+        </div>
       </div>
     </div>
+    <p class="marg enter" data-d="4" style="margin-top:20px; max-width:76ch;">
+      <span class="marg__label">The same information, finally structured</span>
+      The raw T24 code is still there in <span class="u-mono">rawCode</span> — the core team can always trace it. But ops no longer needs to know what <span class="u-mono">AC.CLOSED</span> means. The envelope tells them everything they need to act.
+    </p>
   </div>
 </section>
 
@@ -848,36 +874,48 @@
       <span class="u-mono">pain.001</span> — the standard payment-initiation message. The discipline
       that shaped the request side is exactly what the failure side never received.
     </p>
-    <div class="twopane--arrow enter" data-d="3">
-      <div class="pane pane--muted">
+    <div class="enter" data-d="3" style="display:grid; grid-template-columns:1fr 32px 1fr; gap:0; align-items:start; margin-top:4px;">
+      <div class="pane pane--muted" style="border-radius:var(--radius-lg) 0 0 var(--radius-lg); border-right:none;">
         <div class="pane__title" style="color:var(--ink-soft);">ISO 20022 · pain.001</div>
-        <pre class="code__body" style="background:none; padding:0; font-size:13px;"><span class="t-punc">CstmrCdtTrfInitn</span>
-  GrpHdr › <span class="t-key">MsgId</span>
-  PmtInf
-    <span class="t-key">PmtMtd</span>  TRF
-    Dbtr › <span class="t-key">Nm</span>
-    DbtrAcct › <span class="t-key">IBAN</span>
-    DbtrAgt › <span class="t-key">BICFI</span>
-    CdtTrfTxInf
-      PmtId › <span class="t-key">EndToEndId</span>
-      Amt › <span class="t-key">InstdAmt</span>
-      CdtrAgt › <span class="t-key">BICFI</span>
-      Cdtr › <span class="t-key">Nm</span></pre>
+        <table style="width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px; line-height:2;">
+          <tr><td style="color:var(--ink-faint); padding:0 0 0 8px;">GrpHdr</td><td style="color:var(--ink-faint);">MsgId</td></tr>
+          <tr><td style="padding:0 0 0 8px; color:var(--ink-faint);">PmtInf</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--ink-soft);">PmtMtd</td><td style="color:var(--ink);">TRF</td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">Dbtr › Nm</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">DbtrAcct › IBAN</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">DbtrAgt › BICFI</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">PmtId › EndToEndId</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">Amt › InstdAmt</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">CdtrAgt › BICFI</td><td></td></tr>
+          <tr><td style="padding:0 0 0 20px; color:var(--pine);">Cdtr › Nm</td><td></td></tr>
+        </table>
       </div>
-      <div class="twopane__arrow">→</div>
-      <div class="pane pane--good">
+      <div style="display:flex; flex-direction:column; justify-content:space-around; align-items:center; padding-top:52px; gap:0;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-faint); writing-mode:vertical-rl; letter-spacing:0.1em;">maps to</div>
+        <svg width="32" height="300" viewBox="0 0 32 300" style="flex:1; min-height:180px;">
+          <line x1="4" y1="20" x2="28" y2="20" stroke="var(--line)" stroke-width="1"/>
+          <line x1="4" y1="57" x2="28" y2="57" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="94" x2="28" y2="94" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="131" x2="28" y2="131" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="168" x2="28" y2="168" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="205" x2="28" y2="205" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="242" x2="28" y2="242" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="4" y1="279" x2="28" y2="279" stroke="var(--pine)" stroke-width="1.2" stroke-dasharray="3,2"/>
+        </svg>
+      </div>
+      <div class="pane pane--good" style="border-radius:0 var(--radius-lg) var(--radius-lg) 0; border-left:none;">
         <div class="pane__title">Grand Central · v2.0 request</div>
-        <pre class="code__body" style="background:none; padding:0; font-size:13px;"><span class="t-punc">PaymentInitiation</span>
-  <span class="t-key">paymentId</span>
-  <span class="t-key">paymentMethod</span>  SCT · INST · SWIFT
-  debtor › <span class="t-key">name</span>
-  debtor › <span class="t-key">account</span>
-  <span class="t-key">debtorAgent.bic</span>
-  <span class="t-key">endToEndId</span>
-  <span class="t-key">instructedAmount</span>
-  <span class="t-key">creditorAgent.bic</span>
-  creditor › <span class="t-key">name</span>
-  <span class="t-com">+ instructionId, serviceLevel…</span></pre>
+        <table style="width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px; line-height:2;">
+          <tr><td style="color:var(--ink-faint);">paymentId</td></tr>
+          <tr><td style="color:var(--pine);">paymentMethod</td><td style="color:var(--ink-soft); font-size:11px;">SCT · INST · SWIFT</td></tr>
+          <tr><td style="color:var(--pine);">debtor.name</td></tr>
+          <tr><td style="color:var(--pine);">debtor.account</td></tr>
+          <tr><td style="color:var(--pine);">debtorAgent.bic</td></tr>
+          <tr><td style="color:var(--pine);">endToEndId</td></tr>
+          <tr><td style="color:var(--pine);">instructedAmount</td></tr>
+          <tr><td style="color:var(--pine);">creditorAgent.bic</td></tr>
+          <tr><td style="color:var(--pine);">creditor.name</td></tr>
+        </table>
       </div>
     </div>
     <p class="marg enter" data-d="4" style="margin-top:22px;"><span class="marg__label">The point</span>A reviewer fluent in payments sees a connector designed <em>with</em> the standard. The asymmetry — rigorous request, threadbare failure — is the whole case in one comparison.</p>
@@ -939,9 +977,9 @@
         <table class="tbl" style="font-size:13px;">
           <tbody>
             <tr><td class="u-mono u-pine">ACCOUNT_CLOSED</td><td>Notify customer · don't retry</td></tr>
-            <tr><td class="u-mono u-rust">CORRESPONDENT_REJECT</td><td>Escalate · scheme ops</td></tr>
-            <tr><td class="u-mono u-saffron">RAIL_TIMEOUT</td><td>Investigate · do <em>not</em> retry</td></tr>
-            <tr><td class="u-mono u-rust">OFAC_HOLD</td><td>Compliance · 15-min SLA</td></tr>
+            <tr><td class="u-mono u-rust">SWIFT_RJCT</td><td>Escalate scheme ops · raise SWIFT case</td></tr>
+            <tr><td class="u-mono u-saffron">RAIL_TIMEOUT</td><td>Verify payment state first · do not retry</td></tr>
+            <tr><td class="u-mono u-rust">OFAC_HOLD</td><td>Escalate compliance · SLA per bank policy</td></tr>
             <tr><td class="u-mono u-pine">INSUFFICIENT_FUNDS</td><td>Notify customer · don't retry</td></tr>
           </tbody>
         </table>
