@@ -83,41 +83,33 @@
     });
   }
 
-  /* ---------- SVG draw (architecture s3) ---------- */
+  /* ---------- architecture diagram fade-in (s3) ---------- */
   function drawArchitecture(slide) {
     const svg = $("svg", slide);
     if (!svg) return;
     clearTimers(svg);
 
-    const lines = $$("line, polyline", svg);
-    const fades = $$("rect, polygon", svg);
+    const lines = $$("line", svg);
+    const boxes = $$("rect", svg);
     const texts = $$("text", svg);
 
     if (reduce) {
-      lines.forEach(l => l.classList.remove("draw-line"));
-      [...fades, ...texts].forEach(n => { n.style.opacity = 1; });
+      [...lines, ...boxes, ...texts].forEach(n => { n.style.opacity = 1; });
       return;
     }
 
-    // setup lines
-    lines.forEach((l) => {
-      let len = 600;
-      try { len = l.getTotalLength() || 600; } catch (e) {}
-      l.classList.add("draw-line");
-      l.classList.remove("is-drawn");
-      l.style.setProperty("--len", len);
+    // start hidden
+    [...lines, ...boxes, ...texts].forEach((n) => {
+      n.style.opacity = "0";
+      n.style.transition = "opacity 0.45s var(--ease)";
     });
-    // setup fades
-    [...fades, ...texts].forEach((n) => { n.style.opacity = "0"; n.style.transition = "opacity 0.5s var(--ease)"; });
 
     void svg.getBoundingClientRect();
 
-    // draw lines first
-    after(svg, 60, () => lines.forEach((l) => l.classList.add("is-drawn")));
-    // fade boxes
-    after(svg, 260, () => fades.forEach((n, i) => after(svg, i * 60, () => { n.style.opacity = "1"; })));
-    // fade labels last
-    after(svg, 520, () => texts.forEach((n, i) => after(svg, i * 30, () => { n.style.opacity = "1"; })));
+    // boxes first, then connecting lines, then labels — reads as the system assembling
+    after(svg, 80,  () => boxes.forEach((n, i) => after(svg, i * 70, () => { n.style.opacity = "1"; })));
+    after(svg, 360, () => lines.forEach((n, i) => after(svg, i * 60, () => { n.style.opacity = "1"; })));
+    after(svg, 620, () => texts.forEach((n, i) => after(svg, i * 25, () => { n.style.opacity = "1"; })));
   }
 
   /* ---------- SVG draw (roadmap s29) ---------- */
@@ -138,7 +130,10 @@
 
     if (line) {
       let len = 1020;
-      try { len = line.getTotalLength() || 1020; } catch (e) {}
+      try {
+        const tl = line.getTotalLength();
+        len = (tl && tl > 0) ? tl : 1020;
+      } catch (e) {}
       line.classList.add("draw-line");
       line.classList.remove("is-drawn");
       line.style.setProperty("--len", len);
@@ -171,11 +166,10 @@
   const ROUTINES = {
     s2:  runCounters,
     s3:  drawArchitecture,
-    s6:  runCounters,
-    s9:  revealPivotSimple,
-    s10: revealCluster,
-    s15: revealLogs,
-    s29: drawRoadmap
+    s5:  runCounters,
+    s7:  revealCluster,
+    s9:  revealLogs,
+    s14: drawRoadmap
   };
 
   window.addEventListener("slide:enter", (e) => {

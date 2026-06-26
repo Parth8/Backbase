@@ -12,12 +12,12 @@
   // Act definitions: which slide indices belong to which act
   // Six acts mapped to the bottom rail nodes
   const ACTS = [
-    { name: "Setting the Scene", start: 0 },
-    { name: "The Crisis",        start: 4 },
-    { name: "The Investigation", start: 7 },
-    { name: "Stakeholders",      start: 16 },
-    { name: "The Decision",      start: 20 },
-    { name: "The Resolution",    start: 26 }
+    { name: "Setting the Scene", start: 0 },   // S1-3
+    { name: "The Crisis",        start: 3 },   // S4-5
+    { name: "The Investigation", start: 5 },   // S6-10
+    { name: "The Decision",      start: 10 },  // S11-12
+    { name: "The Fix",           start: 12 },  // S13-14
+    { name: "Resolution",        start: 14 }   // S15
   ];
 
   const navLeft  = document.querySelector(".navzone--left");

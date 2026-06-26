@@ -87,6 +87,7 @@ body::before {
   inset: 0;
   display: grid;
   grid-template-columns: 1fr;
+  align-content: center; /* fallback for older Safari */
   align-content: safe center;
   padding: clamp(60px, 8vh, 96px) var(--gutter) clamp(100px, 13vh, 132px);
   opacity: 0;
@@ -805,38 +806,24 @@ mark.rust { background: var(--rust-soft); }
    PASS 2 — Motion & reveals
    ========================================================= */
 
-/* ---- Slide 9: pivot cells fade in (colours present) ---- */
-#s9 .tbl .cell { opacity: 0; transform: translateY(4px); }
-#s9 .tbl.revealed .cell {
-  opacity: 1; transform: translateY(0);
-  transition: opacity 0.34s var(--ease), transform 0.34s var(--ease);
-}
-
-/* ---- Slide 10: the signature clustering reveal ---- */
-/* Phase 1 — numbers appear with NO colour (apparent randomness) */
-#s10 .tbl .cell { opacity: 0; }
-#s10 .tbl.revealed .cell {
+/* ---- Slide 7: slicing reveal — verdict cells wash to show the 24/23 split ---- */
+/* Phase 1 — cells fade in neutral (no colour, looks undifferentiated) */
+#s7 .tbl .cell { opacity: 0; }
+#s7 .tbl.revealed .cell {
   opacity: 1;
   transition: opacity 0.30s var(--ease);
 }
 /* gate the colour washes behind .washed (higher specificity than base .cell--*) */
-#s10 .tbl .cell--good,
-#s10 .tbl .cell--warn,
-#s10 .tbl .cell--bad {
+#s7 .tbl .cell--good,
+#s7 .tbl .cell--bad {
   background: transparent;
   color: var(--ink);
-  transition: background 0.55s var(--ease), color 0.55s var(--ease), box-shadow 0.55s var(--ease);
+  transition: background 0.55s var(--ease), color 0.55s var(--ease);
 }
-#s10 .tbl.washed .cell--good { background: var(--pine-soft); color: var(--pine-deep); }
-#s10 .tbl.washed .cell--warn { background: var(--saffron-soft); color: #8a5e11; }
-#s10 .tbl.washed .cell--bad  { background: var(--rust-soft); color: var(--rust); }
-/* clustered cells get an extra ring as the pattern lands */
-#s10 .tbl.washed .cell--cluster {
-  box-shadow: inset 0 0 0 1.5px currentColor;
-  border-radius: 3px;
-}
+#s7 .tbl.washed .cell--good { background: var(--pine-soft); color: var(--pine-deep); }
+#s7 .tbl.washed .cell--bad  { background: var(--rust-soft); color: var(--rust); }
 
-/* ---- SVG draw-in (architecture s3, roadmap s29) ---- */
+/* ---- SVG draw-in (roadmap s14); architecture s3 fades via JS ---- */
 .draw-line {
   stroke-dasharray: var(--len, 600);
   stroke-dashoffset: var(--len, 600);
@@ -853,9 +840,9 @@ mark.rust { background: var(--rust-soft); }
   transition: opacity 0.4s var(--ease), transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* ---- Slide 15: log lines reveal one by one ---- */
-#s15 .code__line { opacity: 0; transform: translateY(3px); }
-#s15 .code.is-reading .code__line {
+/* ---- Slide 9: log lines reveal one by one ---- */
+#s9 .code__line { opacity: 0; transform: translateY(3px); }
+#s9 .code.is-reading .code__line {
   opacity: 1; transform: translateY(0);
   transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
 }
@@ -865,10 +852,9 @@ mark.rust { background: var(--rust-soft); }
 
 /* reduced motion: neutralise all of the above */
 @media (prefers-reduced-motion: reduce) {
-  #s9 .tbl .cell, #s10 .tbl .cell, #s15 .code__line { opacity: 1 !important; transform: none !important; }
-  #s10 .tbl .cell--good { background: var(--pine-soft); color: var(--pine-deep); }
-  #s10 .tbl .cell--warn { background: var(--saffron-soft); color: #8a5e11; }
-  #s10 .tbl .cell--bad  { background: var(--rust-soft); color: var(--rust); }
+  #s7 .tbl .cell, #s9 .code__line { opacity: 1 !important; transform: none !important; }
+  #s7 .tbl .cell--good { background: var(--pine-soft); color: var(--pine-deep); }
+  #s7 .tbl .cell--bad  { background: var(--rust-soft); color: var(--rust); }
   .draw-line { stroke-dashoffset: 0 !important; }
   .draw-fade, .draw-pop { opacity: 1 !important; transform: none !important; }
 }
