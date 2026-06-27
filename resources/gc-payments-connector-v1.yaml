@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: Grand Central Payments Connector
+  version: 1.0.0
+  description: |
+    Payment initiation connector for Grand Central iPaaS.
+    Version 1.0 supports SCT (SEPA Credit Transfer) only.
+    First deployed at Apex Banking, Ireland.
+
+    The request contract mirrors ISO 20022 pain.001 field naming conventions.
+    The failure response at this version returns status and an optional error code.
+    Error code is not required - a missing or empty code is schema-valid.
+
+servers:
+  - url: https://api.grandcentral.backbase.io/v1
+    description: Production
+
+paths:
+  /payments/initiate:
+    post:
+      summary: Initiate a payment
+      description: |
+        Accepts a payment instruction from the core banking system and routes it
+        to the appropriate payment rail. In v1, only SCT is supported.
+        The connector translates and submits; it does not make routing decisions.
+      operationId: initiatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInitiationRequest'
+            example:
+              paymentId: "APEX-PAY-20240101-000001"
+              paymentMethod: "SCT"
+              debtor:
+                name: "Liam Murphy"
+                account: "IE29AIBK93115212345678"
+              debtorAgent:
+                bic: "AIBKIE2D"
+              instructedAmount:
+                amount: 250.00
+                currency: "EUR"
+              creditor:
+                name: "Hans Gruber"
+                account: "DE89370400440532013000"
+              creditorAgent:
+                bic: "COBADEFFXXX"
+              endToEndId: "E2E-APEX-20240101-0001"
+      responses:
+        '200':
+          description: Payment accepted and submitted to rail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '400':
+          description: Payment rejected - validation failure or rail rejection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFailureResponse'
+              examples:
+                rail_rejection:
+                  summary: SEPA scheme rejection
+                  value:
+                    paymentId: "APEX-PAY-20240101-000001"
+                    status: "FAILED"
+                    errorCode: "AC01"
+                    errorMessage: "Incorrect account number"
+                missing_code:
+                  summary: Core error - code not translated
+                  value:
+                    paymentId: "APEX-PAY-20240101-000002"
+                    status: "FAILED"
+                    errorCode: "EB-VAL-009"
+                    errorMessage: ""
+        '500':
+          description: Connector error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFailureResponse'
+              example:
+                paymentId: "APEX-PAY-20240101-000003"
+                status: "FAILED"
+                errorCode: ""
+                errorMessage: ""
+
+  /payments/{paymentId}/status:
+    get:
+      summary: Get payment status
+      operationId: getPaymentStatus
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+
+components:
+  schemas:
+    PaymentInitiationRequest:
+      type: object
+      required:
+        - paymentId
+        - paymentMethod
+        - debtor
+        - debtorAgent
+        - instructedAmount
+        - creditor
+        - creditorAgent
+        - endToEndId
+      properties:
+        paymentId:
+          type: string
+          description: Unique identifier for this payment, assigned by the core
+          example: "APEX-PAY-20240101-000001"
+        paymentMethod:
+          type: string
+          enum: [SCT]
+          description: Payment rail to use. Only SCT supported in v1.
+        debtor:
+          $ref: '#/components/schemas/Party'
+        debtorAgent:
+          $ref: '#/components/schemas/Agent'
+        instructedAmount:
+          $ref: '#/components/schemas/Amount'
+        creditor:
+          $ref: '#/components/schemas/Party'
+        creditorAgent:
+          $ref: '#/components/schemas/Agent'
+        endToEndId:
+          type: string
+          description: End-to-end reference, mirrors pain.001 EndToEndId
+          example: "E2E-APEX-20240101-0001"
+
+    Party:
+      type: object
+      required: [name, account]
+      properties:
+        name:
+          type: string
+          description: Account holder name, mirrors pain.001 Nm
+        account:
+          type: string
+          description: IBAN, mirrors pain.001 IBAN
+
+    Agent:
+      type: object
+      required: [bic]
+      properties:
+        bic:
+          type: string
+          description: Bank BIC, mirrors pain.001 BICFI
+          example: "COBADEFFXXX"
+
+    Amount:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Instructed amount, mirrors pain.001 InstdAmt
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: "EUR"
+
+    PaymentSuccessResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        gcTransactionId:
+          type: string
+          description: Grand Central internal transaction reference
+        status:
+          type: string
+          enum: [ACCEPTED]
+        railReference:
+          type: string
+          description: Reference returned by the payment rail
+
+    PaymentFailureResponse:
+      type: object
+      required: [paymentId, status]
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum: [FAILED]
+        errorCode:
+          type: string
+          description: |
+            Error code. Optional - may be empty or absent.
+            May be a SEPA scheme reason code (e.g. AC01) or a raw core code.
+            No guaranteed format. No guaranteed presence.
+        errorMessage:
+          type: string
+          description: Human-readable message. Optional - may be empty.
+
+    PaymentStatusResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED, PENDING, SETTLED, FAILED]
+        gcTransactionId:
+          type: string

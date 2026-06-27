@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: Grand Central Payments Connector
+  version: 2.0.0
+  description: |
+    Payment initiation connector for Grand Central iPaaS.
+    Version 2.0 adds SCT Inst (SEPA Credit Transfer Instant) to the v1 SCT baseline.
+    First deployed at Sparkasse Mittelrhein, Germany.
+
+    The request contract grows to accommodate real-time payment requirements:
+    serviceLevel is added to distinguish instant from standard, and localInstrument
+    is introduced for scheme-specific routing hints.
+
+    The failure response is unchanged from v1. errorCode remains optional.
+    A connector timeout on SCT Inst - where no response is received within 10 seconds -
+    returns an empty response body. This was patched at Sparkasse with a bank-specific
+    timeout wrapper that lives in the Sparkasse build only and is not in this baseline.
+
+servers:
+  - url: https://api.grandcentral.backbase.io/v2
+    description: Production
+
+paths:
+  /payments/initiate:
+    post:
+      summary: Initiate a payment
+      description: |
+        Accepts a payment instruction from the core banking system and routes it
+        to SCT or SCT Inst based on the paymentMethod field.
+        The connector translates and submits; it does not make routing decisions.
+        If the core names SCT_INST and the rail does not respond within 10 seconds,
+        the connector returns an empty response body. No timeout code is guaranteed.
+      operationId: initiatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInitiationRequest'
+            examples:
+              sct_example:
+                summary: Standard SCT payment
+                value:
+                  paymentId: "SPK-PAY-20240601-000101"
+                  paymentMethod: "SCT"
+                  debtor:
+                    name: "Klaus Richter"
+                    account: "DE89370400440532013000"
+                  debtorAgent:
+                    bic: "COBADEFFXXX"
+                  instructedAmount:
+                    amount: 1200.00
+                    currency: "EUR"
+                  creditor:
+                    name: "Marie Dupont"
+                    account: "FR7614508059409940545177501"
+                  creditorAgent:
+                    bic: "BNPAFRPPXXX"
+                  endToEndId: "E2E-SPK-20240601-0101"
+                  serviceLevel: "SEPA"
+              sct_inst_example:
+                summary: Instant payment (SCT Inst)
+                value:
+                  paymentId: "SPK-PAY-20240601-000202"
+                  paymentMethod: "SCT_INST"
+                  debtor:
+                    name: "Klaus Richter"
+                    account: "DE89370400440532013000"
+                  debtorAgent:
+                    bic: "COBADEFFXXX"
+                  instructedAmount:
+                    amount: 75.00
+                    currency: "EUR"
+                  creditor:
+                    name: "Anna Becker"
+                    account: "DE91100000000123456789"
+                  creditorAgent:
+                    bic: "DEUTDEDBXXX"
+                  endToEndId: "E2E-SPK-20240601-0202"
+                  serviceLevel: "INST"
+                  localInstrument: "INST"
+      responses:
+        '200':
+          description: Payment accepted and submitted to rail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '400':
+          description: Payment rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFailureResponse'
+              examples:
+                sepa_reject:
+                  summary: SEPA scheme rejection with reason code
+                  value:
+                    paymentId: "SPK-PAY-20240601-000303"
+                    gcTransactionId: "gc-aabb1122-ccdd-3344-556677889900"
+                    railName: "SCT"
+                    status: "FAILED"
+                    errorCode: "MS03"
+                    errorMessage: "Not specified reason customer generated"
+                core_error:
+                  summary: Core error - raw code passed through
+                  value:
+                    paymentId: "SPK-PAY-20240601-000404"
+                    gcTransactionId: "gc-bbcc2233-ddee-4455-667788990011"
+                    railName: "SCT"
+                    status: "FAILED"
+                    errorCode: "AC.CLOSED"
+                    errorMessage: ""
+                timeout_blank:
+                  summary: SCT Inst timeout - blank response (known gap)
+                  value:
+                    paymentId: "SPK-PAY-20240601-000505"
+                    gcTransactionId: "gc-ccdd3344-eeff-5566-778899aabb"
+                    railName: "SCT_INST"
+                    status: "FAILED"
+                    errorCode: ""
+                    errorMessage: ""
+
+  /payments/{paymentId}/status:
+    get:
+      summary: Get payment status
+      operationId: getPaymentStatus
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+
+components:
+  schemas:
+    PaymentInitiationRequest:
+      type: object
+      required:
+        - paymentId
+        - paymentMethod
+        - debtor
+        - debtorAgent
+        - instructedAmount
+        - creditor
+        - creditorAgent
+        - endToEndId
+      properties:
+        paymentId:
+          type: string
+          description: Unique identifier assigned by the core banking system
+        paymentMethod:
+          type: string
+          enum: [SCT, SCT_INST]
+          description: Payment rail. SCT for standard, SCT_INST for real-time.
+        debtor:
+          $ref: '#/components/schemas/Party'
+        debtorAgent:
+          $ref: '#/components/schemas/Agent'
+        instructedAmount:
+          $ref: '#/components/schemas/Amount'
+        creditor:
+          $ref: '#/components/schemas/Party'
+        creditorAgent:
+          $ref: '#/components/schemas/Agent'
+        endToEndId:
+          type: string
+          description: End-to-end reference, mirrors pain.001 EndToEndId
+        serviceLevel:
+          type: string
+          enum: [SEPA, INST]
+          description: SEPA service level. INST required for SCT Inst routing.
+        localInstrument:
+          type: string
+          description: Local instrument code for scheme-specific routing
+          example: "INST"
+
+    Party:
+      type: object
+      required: [name, account]
+      properties:
+        name:
+          type: string
+          description: Account holder name, mirrors pain.001 Nm
+        account:
+          type: string
+          description: IBAN, mirrors pain.001 IBAN
+
+    Agent:
+      type: object
+      required: [bic]
+      properties:
+        bic:
+          type: string
+          description: Bank BIC, mirrors pain.001 BICFI
+
+    Amount:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Instructed amount, mirrors pain.001 InstdAmt
+        currency:
+          type: string
+          description: ISO 4217 currency code
+
+    PaymentSuccessResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        gcTransactionId:
+          type: string
+          description: Grand Central internal transaction reference
+        status:
+          type: string
+          enum: [ACCEPTED]
+        railName:
+          type: string
+          enum: [SCT, SCT_INST]
+        railReference:
+          type: string
+
+    PaymentFailureResponse:
+      type: object
+      required: [paymentId, status]
+      description: |
+        Failure response envelope. Note: errorCode is optional and may be empty.
+        No origin field. No guaranteed translation of core or scheme codes.
+        A blank errorCode and empty errorMessage is a valid response under this contract.
+        This is the gap that v3.5 addresses.
+      properties:
+        paymentId:
+          type: string
+        gcTransactionId:
+          type: string
+        railName:
+          type: string
+          enum: [SCT, SCT_INST]
+        status:
+          type: string
+          enum: [FAILED]
+        errorCode:
+          type: string
+          description: Optional. May be a scheme code, a raw core code, or empty.
+        errorMessage:
+          type: string
+          description: Optional. May be empty.
+
+    PaymentStatusResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED, PENDING, SETTLED, FAILED]
+        gcTransactionId:
+          type: string
+        railName:
+          type: string

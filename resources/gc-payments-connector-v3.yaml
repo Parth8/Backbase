@@ -1,0 +1,355 @@
+openapi: 3.0.3
+info:
+  title: Grand Central Payments Connector
+  version: 3.0.0
+  description: |
+    Payment initiation connector for Grand Central iPaaS.
+    Version 3.0 adds SWIFT (cross-border) to the SCT and SCT Inst baseline.
+    First deployed at Meridian Bank NV, Amsterdam.
+
+    SWIFT support required significant expansion of the request contract to accommodate
+    correspondent bank chains, charge bearer instructions, SWIFT gpi references,
+    purpose codes, and regulatory fields. The request now contains 20+ fields,
+    mirroring ISO 20022 pain.001 structure throughout.
+
+    THE FAILURE RESPONSE IS UNCHANGED FROM V1 AND V2.
+    errorCode remains optional. No origin field. No guaranteed translation.
+    This is the specification gap identified during Meridian UAT cycle 3:
+    - Core errors (T24 codes) pass through raw with no mapping
+    - SWIFT rejections return as PAYMENT_FAILED with no scheme code
+    - Connector timeouts on SCT Inst return an empty body
+    All three are valid under this contract. The fix is v3.5.
+
+servers:
+  - url: https://api.grandcentral.backbase.io/v3
+    description: Production
+
+paths:
+  /payments/initiate:
+    post:
+      summary: Initiate a payment
+      description: |
+        Accepts a payment instruction from the core banking system and routes it
+        to SCT, SCT Inst, or SWIFT based on the paymentMethod field.
+        The connector translates and submits; the core decides the rail.
+
+        Known failure modes as of UAT cycle 3 (Meridian):
+        - T24 core codes have no translation mapping. They pass through raw.
+        - SWIFT rejections (RJCT) are not standardised. They return PAYMENT_FAILED.
+        - SCT Inst timeouts return an empty response body.
+        All of the above are valid under this contract. See v3.5 for the fix.
+      operationId: initiatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInitiationRequest'
+            examples:
+              sct_example:
+                summary: SCT payment
+                value:
+                  paymentId: "MER-PAY-20250317-000101"
+                  paymentMethod: "SCT"
+                  debtor:
+                    name: "Jan de Vries"
+                    account: "NL91ABNA0417164300"
+                  debtorAgent:
+                    bic: "ABNANL2A"
+                  instructedAmount:
+                    amount: 450.00
+                    currency: "EUR"
+                  creditor:
+                    name: "Sophie Bernard"
+                    account: "FR7614508059409940545177501"
+                  creditorAgent:
+                    bic: "BNPAFRPPXXX"
+                  endToEndId: "E2E-MER-20250317-0101"
+                  serviceLevel: "SEPA"
+              sct_inst_example:
+                summary: SCT Inst payment
+                value:
+                  paymentId: "MER-PAY-20250317-000202"
+                  paymentMethod: "SCT_INST"
+                  debtor:
+                    name: "Aisha Bakker"
+                    account: "NL69INGB0123456789"
+                  debtorAgent:
+                    bic: "INGBNL2A"
+                  instructedAmount:
+                    amount: 120.00
+                    currency: "EUR"
+                  creditor:
+                    name: "Pieter Smit"
+                    account: "NL02ABNA0123456789"
+                  creditorAgent:
+                    bic: "ABNANL2A"
+                  endToEndId: "E2E-MER-20250317-0202"
+                  serviceLevel: "INST"
+                  localInstrument: "INST"
+              swift_example:
+                summary: SWIFT cross-border payment
+                value:
+                  paymentId: "MER-PAY-20250317-000303"
+                  paymentMethod: "SWIFT"
+                  debtor:
+                    name: "Meridian Business Client BV"
+                    account: "NL91ABNA0417164300"
+                  debtorAgent:
+                    bic: "ABNANL2A"
+                  instructedAmount:
+                    amount: 18500.00
+                    currency: "USD"
+                  creditor:
+                    name: "Acme Exports Ltd"
+                    account: "GB29NWBK60161331926819"
+                  creditorAgent:
+                    bic: "NWBKGB2L"
+                  intermediaryAgent:
+                    bic: "CHASUS33XXX"
+                  endToEndId: "E2E-MER-20250317-0303"
+                  chargeBearer: "SHA"
+                  purposeCode: "SUPP"
+                  remittanceInfo: "Invoice INV-2025-00441"
+                  instructionPriority: "NORM"
+                  gpiEndToEndId: "GPI-MER-20250317-0303"
+      responses:
+        '200':
+          description: Payment accepted and submitted to rail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSuccessResponse'
+        '400':
+          description: Payment rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFailureResponse'
+              examples:
+                sepa_reject_usable:
+                  summary: SEPA reject with known scheme code (usable)
+                  value:
+                    paymentId: "MER-PAY-20250317-000101"
+                    gcTransactionId: "gc-1a2b3c4d-5e6f-7890-abcdef012345"
+                    railName: "SCT"
+                    status: "FAILED"
+                    errorCode: "AC01"
+                    errorMessage: "Incorrect account number"
+                core_error_raw:
+                  summary: Core error - T24 code passed raw (not usable)
+                  value:
+                    paymentId: "MER-PAY-20250317-000211"
+                    gcTransactionId: "gc-ccdd3344-eeff-5566-778899aabb"
+                    railName: "SCT"
+                    status: "FAILED"
+                    errorCode: "AC.CLOSED"
+                    errorMessage: ""
+                swift_generic:
+                  summary: SWIFT rejection - generic only (not usable)
+                  value:
+                    paymentId: "MER-PAY-20250317-000303"
+                    gcTransactionId: "gc-ddee4455-ffaa-6677-889900bbccdd"
+                    railName: "SWIFT"
+                    status: "FAILED"
+                    errorCode: "PAYMENT_FAILED"
+                    errorMessage: ""
+                sct_inst_timeout_blank:
+                  summary: SCT Inst timeout - blank response (not usable)
+                  value:
+                    paymentId: "MER-PAY-20250317-000404"
+                    gcTransactionId: "gc-eeff5566-aabb-7788-990011ccddee"
+                    railName: "SCT_INST"
+                    status: "FAILED"
+                    errorCode: ""
+                    errorMessage: ""
+
+  /payments/{paymentId}/status:
+    get:
+      summary: Get payment status
+      operationId: getPaymentStatus
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+
+components:
+  schemas:
+    PaymentInitiationRequest:
+      type: object
+      required:
+        - paymentId
+        - paymentMethod
+        - debtor
+        - debtorAgent
+        - instructedAmount
+        - creditor
+        - creditorAgent
+        - endToEndId
+      properties:
+        paymentId:
+          type: string
+          description: Unique identifier assigned by the core banking system
+        paymentMethod:
+          type: string
+          enum: [SCT, SCT_INST, SWIFT]
+          description: Payment rail. The core names the rail; the connector obeys.
+        debtor:
+          $ref: '#/components/schemas/Party'
+        debtorAgent:
+          $ref: '#/components/schemas/Agent'
+        instructedAmount:
+          $ref: '#/components/schemas/Amount'
+        creditor:
+          $ref: '#/components/schemas/Party'
+        creditorAgent:
+          $ref: '#/components/schemas/Agent'
+        intermediaryAgent:
+          $ref: '#/components/schemas/Agent'
+          description: Correspondent bank for SWIFT routing. Optional.
+        endToEndId:
+          type: string
+          description: End-to-end reference, mirrors pain.001 EndToEndId
+        serviceLevel:
+          type: string
+          enum: [SEPA, INST, SWIFT]
+          description: Payment service level
+        localInstrument:
+          type: string
+          description: Local instrument code
+        chargeBearer:
+          type: string
+          enum: [SHA, OUR, BEN]
+          description: SWIFT charge bearer instruction. Required for SWIFT payments.
+        purposeCode:
+          type: string
+          description: ISO 20022 purpose code (e.g. SUPP for supplier payment)
+          example: "SUPP"
+        remittanceInfo:
+          type: string
+          description: Unstructured remittance information
+          maxLength: 140
+        instructionPriority:
+          type: string
+          enum: [NORM, HIGH]
+          description: Instruction priority for SWIFT
+        gpiEndToEndId:
+          type: string
+          description: SWIFT gpi tracker end-to-end reference
+
+    Party:
+      type: object
+      required: [name, account]
+      properties:
+        name:
+          type: string
+          description: Account holder name, mirrors pain.001 Nm
+        account:
+          type: string
+          description: IBAN or account number, mirrors pain.001 IBAN
+
+    Agent:
+      type: object
+      required: [bic]
+      properties:
+        bic:
+          type: string
+          description: Bank BIC, mirrors pain.001 BICFI
+          example: "COBADEFFXXX"
+
+    Amount:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Instructed amount, mirrors pain.001 InstdAmt
+        currency:
+          type: string
+          description: ISO 4217 currency code
+
+    PaymentSuccessResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        gcTransactionId:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED]
+        railName:
+          type: string
+          enum: [SCT, SCT_INST, SWIFT]
+        railReference:
+          type: string
+        gpiReference:
+          type: string
+          description: SWIFT gpi UETR reference, present for SWIFT payments only
+
+    PaymentFailureResponse:
+      type: object
+      required: [paymentId, status]
+      description: |
+        Failure response envelope - v3 baseline.
+
+        KNOWN LIMITATION: This contract does not require errorCode to be present,
+        structured, or translated. The following are all valid responses:
+        - errorCode: "AC01" (SEPA scheme code - usable)
+        - errorCode: "AC.CLOSED" (raw T24 code - not usable without mapping)
+        - errorCode: "PAYMENT_FAILED" (generic - not usable)
+        - errorCode: "" (blank - not usable)
+
+        No origin field. The receiving system cannot determine whether the failure
+        came from the core, the connector, or the payment rail.
+
+        This is the gap addressed by v3.5. See gc_error_mapping_config_v3.json
+        and the v3.5 error envelope specification.
+      properties:
+        paymentId:
+          type: string
+          description: Payment identifier, always present
+        gcTransactionId:
+          type: string
+          description: Grand Central transaction reference
+        railName:
+          type: string
+          enum: [SCT, SCT_INST, SWIFT]
+        status:
+          type: string
+          enum: [FAILED]
+        errorCode:
+          type: string
+          description: |
+            Optional. No guaranteed format. May be:
+            - A SEPA scheme reason code (AC01, MS03, etc.)
+            - A raw T24 core code (AC.CLOSED, EB-VAL-009, etc.)
+            - A generic string (PAYMENT_FAILED)
+            - Empty string or absent
+        errorMessage:
+          type: string
+          description: Optional. May be empty.
+
+    PaymentStatusResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED, PENDING, SETTLED, FAILED]
+        gcTransactionId:
+          type: string
+        railName:
+          type: string
+          enum: [SCT, SCT_INST, SWIFT]

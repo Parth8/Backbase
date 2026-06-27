@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Central Payments Connector · API v3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#E9E0D6;--paper-2:#F2EBE2;--paper-3:#DFD5C8;--paper-4:#D6CABA;--ink:#2A211C;--ink-soft:#6F6358;--ink-faint:#9A8E7F;--line:rgba(42,33,28,0.14);--line-strong:rgba(42,33,28,0.28);--pine:#35503F;--pine-soft:rgba(53,80,63,0.10);--saffron:#C2871B;--saffron-soft:rgba(194,135,27,0.14);--rust:#B0512E;--rust-soft:rgba(176,81,46,0.12);--display:"Bricolage Grotesque",sans-serif;--body:"Newsreader",Georgia,serif;--mono:"Spline Sans Mono",Consolas,monospace;--radius:5px}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .page{max-width:960px;margin:0 auto;padding:48px 32px 80px}
+  .api-header{border-bottom:1px solid var(--line-strong);padding-bottom:28px;margin-bottom:40px}
+  .api-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--pine);background:var(--pine-soft);border:1px solid rgba(53,80,63,0.3);border-radius:999px;padding:4px 12px;margin-bottom:14px}
+  .api-title{font-family:var(--display);font-size:32px;font-weight:700;letter-spacing:-0.02em;margin:0 0 8px}
+  .api-version{font-family:var(--mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .api-desc{font-size:16px;color:var(--ink-soft);margin:14px 0 0;max-width:68ch;line-height:1.55}
+  .api-note{margin-top:16px;padding:12px 16px;background:var(--rust-soft);border-left:3px solid var(--rust);border-radius:var(--radius);font-size:14px;color:var(--ink)}
+  .api-note strong{color:var(--rust)}
+  .delta{margin-top:14px;padding:12px 16px;background:var(--saffron-soft);border-left:3px solid var(--saffron);border-radius:var(--radius);font-size:14px;color:var(--ink)}
+  .delta strong{color:#8a5e11}
+  .server-row{display:flex;align-items:center;gap:12px;margin-bottom:32px;font-family:var(--mono);font-size:13px}
+  .server-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .server-url{background:var(--paper-3);border:1px solid var(--line);border-radius:var(--radius);padding:6px 12px;color:var(--pine)}
+  .endpoint{margin-bottom:32px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .endpoint-head{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--paper-4);border-bottom:1px solid var(--line)}
+  .method{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:0.08em;padding:4px 10px;border-radius:4px}
+  .method-post{background:var(--pine);color:#F2EBE2}
+  .method-get{background:var(--saffron-soft);color:#8a5e11;border:1px solid rgba(194,135,27,0.4)}
+  .endpoint-path{font-family:var(--mono);font-size:15px;color:var(--ink)}
+  .endpoint-summary{font-size:14px;color:var(--ink-soft);margin-left:auto}
+  .endpoint-body{padding:20px}
+  .endpoint-desc{font-size:15px;color:var(--ink-soft);margin:0 0 20px;line-height:1.55}
+  .sec{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin:20px 0 10px}
+  .schema{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px}
+  .schema th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;padding:8px 12px;border-bottom:1px solid var(--line-strong)}
+  .schema td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .schema tr:last-child td{border-bottom:none}
+  .field-name{font-family:var(--mono);font-size:13px;color:var(--pine)}
+  .field-type{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+  .field-req{font-family:var(--mono);font-size:10px;color:var(--rust);text-transform:uppercase;letter-spacing:0.08em}
+  .field-opt{font-family:var(--mono);font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.08em}
+  .field-new{font-family:var(--mono);font-size:10px;color:var(--pine);text-transform:uppercase;letter-spacing:0.08em;background:var(--pine-soft);padding:2px 6px;border-radius:3px}
+  .field-gap{font-family:var(--mono);font-size:10px;color:var(--rust);text-transform:uppercase;letter-spacing:0.08em;background:var(--rust-soft);padding:2px 6px;border-radius:3px}
+  .field-desc{font-size:13.5px;color:var(--ink)}
+  .responses{display:grid;gap:10px}
+  .response{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .response-head{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--paper-3);border-bottom:1px solid var(--line)}
+  .status{font-family:var(--mono);font-size:13px;font-weight:600;padding:3px 9px;border-radius:4px}
+  .status-200{background:var(--pine-soft);color:var(--pine)}
+  .status-400{background:var(--saffron-soft);color:#8a5e11}
+  .response-label{font-size:14px;color:var(--ink-soft)}
+  .response-body{padding:14px}
+  pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.7;background:var(--paper-3);border-radius:4px;padding:12px 14px;overflow-x:auto;white-space:pre}
+  .gap-box{margin-top:28px;padding:16px 20px;background:var(--rust-soft);border:1px solid rgba(176,81,46,0.3);border-radius:6px}
+  .gap-box h4{font-family:var(--display);font-size:16px;font-weight:700;color:var(--rust);margin:0 0 8px}
+  .gap-box p{font-size:14px;margin:0 0 10px;color:var(--ink);line-height:1.55}
+  .gap-box p:last-child{margin-bottom:0}
+  .fix-box{margin-top:16px;padding:14px 18px;background:var(--pine-soft);border:1px solid rgba(53,80,63,0.25);border-radius:6px;font-size:14px;color:var(--ink)}
+  .fix-box strong{color:var(--pine)}
+  .api-footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);display:flex;justify-content:space-between}
+  a{color:var(--pine)}
+  code{font-family:var(--mono);font-size:12.5px;background:var(--paper-3);padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="api-header">
+    <div class="api-badge">Grand Central · iPaaS</div>
+    <h1 class="api-title">Payments Connector</h1>
+    <div class="api-version">Version 3.0.0 &nbsp;·&nbsp; Meridian Bank NV, Amsterdam &nbsp;·&nbsp; SCT + SCT Inst + SWIFT</div>
+    <p class="api-desc">Adds SWIFT (cross-border) to the v2 baseline. SWIFT support required significant expansion of the request contract: correspondent agent, charge bearer, purpose code, remittance info, SWIFT gpi reference, and instruction priority are all new. The request now contains 20+ fields, closely mirroring ISO 20022 pain.001.</p>
+    <div class="delta"><strong>What changed from v2:</strong> Request adds 8 new fields for SWIFT. <code>paymentMethod</code> now supports <code>SWIFT</code>. The failure response is <strong>unchanged from v1 and v2</strong>. This is the gap.</div>
+    <div class="api-note"><strong>The asymmetry:</strong> The request side grew from 7 fields (v1) to 12 (v2) to 20+ (v3), carefully tracking ISO 20022 pain.001 with each new rail. The failure response has been status + optional errorCode since v1. No origin field has ever been added. This is the specification gap identified in UAT cycle 3 at Meridian. It is addressed in v3.5.</div>
+  </div>
+
+  <div class="server-row">
+    <span class="server-label">Base URL</span>
+    <span class="server-url">https://api.grandcentral.backbase.io/v3</span>
+  </div>
+
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method method-post">POST</span>
+      <span class="endpoint-path">/payments/initiate</span>
+      <span class="endpoint-summary">Initiate a payment</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Routes to SCT, SCT Inst, or SWIFT based on <code>paymentMethod</code>. The core names the rail; the connector translates, submits, and returns. When SWIFT is named, the connector formats an MT103 message for the SWIFT network via the debtorAgent's SWIFT gateway.</p>
+
+      <div class="sec">Request body &nbsp;- new fields highlighted</div>
+      <table class="schema">
+        <thead><tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="field-name">paymentId</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Unique identifier assigned by the core</td></tr>
+          <tr><td class="field-name">paymentMethod</td><td class="field-type">enum</td><td class="field-req">required</td><td class="field-desc"><code>SCT</code> | <code>SCT_INST</code> | <code>SWIFT</code></td></tr>
+          <tr><td class="field-name">debtor.name</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>Dbtr &gt; Nm</code></td></tr>
+          <tr><td class="field-name">debtor.account</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">IBAN or account number. Mirrors pain.001 <code>DbtrAcct</code></td></tr>
+          <tr><td class="field-name">debtorAgent.bic</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>DbtrAgt &gt; BICFI</code></td></tr>
+          <tr><td class="field-name">instructedAmount</td><td class="field-type">object</td><td class="field-req">required</td><td class="field-desc">amount + currency. Mirrors pain.001 <code>InstdAmt</code></td></tr>
+          <tr><td class="field-name">creditor.name</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>Cdtr &gt; Nm</code></td></tr>
+          <tr><td class="field-name">creditor.account</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>CdtrAcct</code></td></tr>
+          <tr><td class="field-name">creditorAgent.bic</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>CdtrAgt &gt; BICFI</code></td></tr>
+          <tr><td class="field-name">endToEndId</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Mirrors pain.001 <code>EndToEndId</code></td></tr>
+          <tr><td class="field-name">serviceLevel</td><td class="field-type">enum</td><td class="field-opt">optional</td><td class="field-desc"><code>SEPA</code> | <code>INST</code> | <code>SWIFT</code></td></tr>
+          <tr><td class="field-name">localInstrument</td><td class="field-type">string</td><td class="field-opt">optional</td><td class="field-desc">Scheme-specific instrument code</td></tr>
+          <tr><td class="field-name">intermediaryAgent.bic</td><td class="field-type">string</td><td class="field-new">new in v3</td><td class="field-desc">Correspondent bank BIC for SWIFT routing</td></tr>
+          <tr><td class="field-name">chargeBearer</td><td class="field-type">enum</td><td class="field-new">new in v3</td><td class="field-desc"><code>SHA</code> | <code>OUR</code> | <code>BEN</code>. Required for SWIFT.</td></tr>
+          <tr><td class="field-name">purposeCode</td><td class="field-type">string</td><td class="field-new">new in v3</td><td class="field-desc">ISO 20022 purpose code. e.g. <code>SUPP</code> (supplier payment)</td></tr>
+          <tr><td class="field-name">remittanceInfo</td><td class="field-type">string</td><td class="field-new">new in v3</td><td class="field-desc">Unstructured remittance. Max 140 chars.</td></tr>
+          <tr><td class="field-name">instructionPriority</td><td class="field-type">enum</td><td class="field-new">new in v3</td><td class="field-desc"><code>NORM</code> | <code>HIGH</code></td></tr>
+          <tr><td class="field-name">gpiEndToEndId</td><td class="field-type">string</td><td class="field-new">new in v3</td><td class="field-desc">SWIFT gpi tracker end-to-end reference</td></tr>
+        </tbody>
+      </table>
+
+      <pre>{
+  "paymentId": "MER-PAY-20250317-000303",
+  "paymentMethod": "SWIFT",
+  "debtor": { "name": "Meridian Business Client BV", "account": "NL91ABNA0417164300" },
+  "debtorAgent": { "bic": "ABNANL2A" },
+  "instructedAmount": { "amount": 18500.00, "currency": "USD" },
+  "creditor": { "name": "Acme Exports Ltd", "account": "GB29NWBK60161331926819" },
+  "creditorAgent": { "bic": "NWBKGB2L" },
+  "intermediaryAgent": { "bic": "CHASUS33XXX" },
+  "endToEndId": "E2E-MER-20250317-0303",
+  "chargeBearer": "SHA",
+  "purposeCode": "SUPP",
+  "remittanceInfo": "Invoice INV-2025-00441",
+  "instructionPriority": "NORM",
+  "gpiEndToEndId": "GPI-MER-20250317-0303"
+}</pre>
+
+      <div class="sec">Responses</div>
+      <div class="responses">
+        <div class="response">
+          <div class="response-head"><span class="status status-200">200</span><span class="response-label">Payment accepted</span></div>
+          <div class="response-body"><pre>{ "paymentId": "MER-PAY-20250317-000303", "gcTransactionId": "gc-...", "railName": "SWIFT", "status": "ACCEPTED", "gpiReference": "UETR-..." }</pre></div>
+        </div>
+        <div class="response">
+          <div class="response-head"><span class="status status-400">400</span><span class="response-label">Payment rejected</span></div>
+          <div class="response-body">
+            <table class="schema" style="margin-bottom:12px;">
+              <thead><tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">paymentId</td><td class="field-type">string</td><td class="field-req">required</td><td class="field-desc">Always returned</td></tr>
+                <tr><td class="field-name">gcTransactionId</td><td class="field-type">string</td><td class="field-opt">optional</td><td class="field-desc">Grand Central internal reference</td></tr>
+                <tr><td class="field-name">railName</td><td class="field-type">enum</td><td class="field-opt">optional</td><td class="field-desc"><code>SCT</code> | <code>SCT_INST</code> | <code>SWIFT</code></td></tr>
+                <tr><td class="field-name">status</td><td class="field-type">enum</td><td class="field-req">required</td><td class="field-desc"><code>FAILED</code></td></tr>
+                <tr><td class="field-name">errorCode</td><td class="field-type">string</td><td class="field-gap">gap</td><td class="field-desc">Optional. No guaranteed format. May be scheme code, raw core code, generic string, or empty. No origin. No translation guaranteed.</td></tr>
+                <tr><td class="field-name">errorMessage</td><td class="field-type">string</td><td class="field-opt">optional</td><td class="field-desc">May be empty.</td></tr>
+              </tbody>
+            </table>
+            <pre>// SEPA reject - usable
+{ "paymentId": "MER-PAY-20250317-000101", "gcTransactionId": "gc-...", "railName": "SCT", "status": "FAILED", "errorCode": "AC01", "errorMessage": "Incorrect account number" }
+
+// Core T24 error - raw, not usable
+{ "paymentId": "MER-PAY-20250317-000211", "gcTransactionId": "gc-...", "railName": "SCT", "status": "FAILED", "errorCode": "AC.CLOSED", "errorMessage": "" }
+
+// SWIFT rejection - generic, not usable
+{ "paymentId": "MER-PAY-20250317-000303", "gcTransactionId": "gc-...", "railName": "SWIFT", "status": "FAILED", "errorCode": "PAYMENT_FAILED", "errorMessage": "" }
+
+// SCT Inst timeout - blank, not usable
+{ "paymentId": "MER-PAY-20250317-000404", "gcTransactionId": "gc-...", "railName": "SCT_INST", "status": "FAILED", "errorCode": "", "errorMessage": "" }</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="gap-box">
+        <h4>The specification gap - as identified in Meridian UAT cycle 3</h4>
+        <p>The failure response envelope has not changed since v1. Three failure categories are not actionable by ops:</p>
+        <p><strong>Core errors:</strong> T24 codes (e.g. <code>AC.CLOSED</code>) pass through raw. The connector has no translation mapping. Patched at Apex Banking in v1 with a bank-specific transformer - not in this baseline.</p>
+        <p><strong>Connector timeouts:</strong> When SCT Inst returns no response in 10 seconds, the connector returns an empty body. Patched at Sparkasse in v2 - not in this baseline.</p>
+        <p><strong>SWIFT rejections:</strong> SWIFT rejection responses are not standardised in this contract. They return as <code>PAYMENT_FAILED</code> with an empty message. This failure mode is new in v3 and has not been patched anywhere.</p>
+        <div class="fix-box"><strong>Fix:</strong> v3.5 adds an <code>origin</code> field (derived from the config mapping, not runtime state) and makes errorCode a canonical translated value, not a passthrough. See <code>gc_error_mapping_config_v3.json</code> for the full mapping. The fix requires no code change to the connector - only a config expansion and a contract version bump.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-path">/payments/{paymentId}/status</span>
+      <span class="endpoint-summary">Get payment status</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="sec">Response</div>
+      <pre>{ "paymentId": "MER-PAY-20250317-000303", "gcTransactionId": "gc-...", "railName": "SWIFT", "status": "ACCEPTED" }</pre>
+    </div>
+  </div>
+
+  <div class="api-footer">
+    <span>Grand Central Payments Connector · v3.0.0 · SCT + SCT Inst + SWIFT</span>
+    <span>Case study artifact · Meridian Bank NV</span>
+  </div>
+</div>
+</body>
+</html>

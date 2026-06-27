@@ -1,0 +1,381 @@
+{
+  "_meta": {
+    "version": "3.5",
+    "description": "Grand Central Payments Connector error mapping configuration. Maps raw codes from rail, connector, and core to a canonical response envelope. No retry flags, SLA targets, or ops actions - those are the bank's operational policy, not the connector's contract.",
+    "sections": {
+      "rail": "Standard scheme codes. Finite, regulated, identical for every bank. Platform-owned.",
+      "connector": "Connector-generated codes. Platform-owned.",
+      "core": "Bank core codes. Bank-owned. Meridian T24 mappings.",
+      "fallback": "Applied when rawCode has no matching entry. Always returns a structured response."
+    },
+    "fields": {
+      "origin": "Where the failure came from. Derived from the config entry, not from runtime state.",
+      "code": "Canonical code. Stable across all banks on the platform.",
+      "reason": "Plain English description for ops."
+    }
+  },
+
+  "rail": {
+    "_comment": "SEPA scheme reason codes (pacs.002) and SWIFT rejection codes. Platform-standard.",
+
+    "AC01": { "origin": "RAIL", "code": "INCORRECT_ACCOUNT_NUMBER", "reason": "Incorrect account number format or check digit." },
+    "AC02": { "origin": "RAIL", "code": "INVALID_DEBTOR_ACCOUNT", "reason": "Debtor account number is invalid." },
+    "AC03": { "origin": "RAIL", "code": "INVALID_CREDITOR_ACCOUNT", "reason": "Creditor account number is invalid." },
+    "AC04": { "origin": "RAIL", "code": "CLOSED_ACCOUNT", "reason": "Account is closed." },
+    "AC05": { "origin": "RAIL", "code": "CLOSED_DEBTOR_ACCOUNT", "reason": "Debtor account is closed." },
+    "AC06": { "origin": "RAIL", "code": "BLOCKED_ACCOUNT", "reason": "Account is blocked." },
+    "AC07": { "origin": "RAIL", "code": "CLOSED_CREDITOR_ACCOUNT", "reason": "Creditor account is closed." },
+    "AC08": { "origin": "RAIL", "code": "INVALID_BRANCH_CODE", "reason": "Branch code is not valid." },
+    "AC09": { "origin": "RAIL", "code": "INVALID_ACCOUNT_CURRENCY", "reason": "Account currency is not valid for this transaction." },
+    "AC10": { "origin": "RAIL", "code": "INVALID_DEBIT_ACCOUNT", "reason": "Debit account number is invalid." },
+    "AC11": { "origin": "RAIL", "code": "INVALID_TRANSACT_ACCOUNT", "reason": "Transaction account is not valid for this transaction." },
+    "AC12": { "origin": "RAIL", "code": "INVALID_CREDITOR_ACCOUNT_TYPE", "reason": "Creditor account type is missing or invalid." },
+    "AC13": { "origin": "RAIL", "code": "INVALID_DEBTOR_ACCOUNT_TYPE", "reason": "Debtor account type is missing or invalid." },
+    "AC14": { "origin": "RAIL", "code": "INVALID_AGENT_ACCOUNT", "reason": "Agent account is missing or invalid." },
+
+    "AG01": { "origin": "RAIL", "code": "TRANSACTION_FORBIDDEN", "reason": "Transaction is forbidden for this type of account." },
+    "AG02": { "origin": "RAIL", "code": "INVALID_BANK_OPERATION_CODE", "reason": "Bank operation code is invalid." },
+    "AG03": { "origin": "RAIL", "code": "TRANSACTION_NOT_SUPPORTED", "reason": "Transaction type is not supported." },
+    "AG04": { "origin": "RAIL", "code": "INVALID_AGENT", "reason": "Agent in message is not valid." },
+    "AG05": { "origin": "RAIL", "code": "FORBIDDEN_TRANSACTION", "reason": "Transaction forbidden on this agent." },
+    "AG06": { "origin": "RAIL", "code": "AGENT_SUSPENDED", "reason": "Agent is suspended." },
+
+    "AM01": { "origin": "RAIL", "code": "ZERO_AMOUNT", "reason": "Instructed amount is zero." },
+    "AM02": { "origin": "RAIL", "code": "NOT_ALLOWED_AMOUNT", "reason": "Amount is not allowed." },
+    "AM03": { "origin": "RAIL", "code": "NOT_ALLOWED_CURRENCY", "reason": "Specified message amount currency is not allowed." },
+    "AM04": { "origin": "RAIL", "code": "INSUFFICIENT_FUNDS", "reason": "Insufficient funds in the account to cover the transaction." },
+    "AM05": { "origin": "RAIL", "code": "DUPLICATE_AMOUNT", "reason": "Duplicate transaction detected by amount." },
+    "AM06": { "origin": "RAIL", "code": "TOO_LOW_AMOUNT", "reason": "Amount is below the minimum allowed." },
+    "AM07": { "origin": "RAIL", "code": "BLOCKED_AMOUNT", "reason": "Amount has been blocked." },
+    "AM09": { "origin": "RAIL", "code": "WRONG_AMOUNT", "reason": "Amount received is different from expected." },
+    "AM10": { "origin": "RAIL", "code": "INVALID_CONTROL_SUM", "reason": "Sum of instructed amounts does not match control sum." },
+    "AM11": { "origin": "RAIL", "code": "INVALID_TRANSACTION_CURRENCY", "reason": "Transaction currency is not valid." },
+    "AM12": { "origin": "RAIL", "code": "INVALID_AMOUNT", "reason": "Amount is invalid for the transaction." },
+    "AM14": { "origin": "RAIL", "code": "AMOUNT_EXCEEDS_AGREED_LIMIT", "reason": "Amount exceeds agreed limit for this account." },
+
+    "BE01": { "origin": "RAIL", "code": "INCONSISTENT_IDENTIFICATION", "reason": "Identification of end customer not consistent with account number." },
+    "BE04": { "origin": "RAIL", "code": "MISSING_CREDITOR_ADDRESS", "reason": "Creditor address is missing or incomplete." },
+    "BE05": { "origin": "RAIL", "code": "UNRECOGNISED_INITIATING_PARTY", "reason": "Initiating party is not recognised." },
+    "BE06": { "origin": "RAIL", "code": "UNKNOWN_END_CUSTOMER", "reason": "End customer is unknown." },
+    "BE07": { "origin": "RAIL", "code": "MISSING_DEBTOR_ADDRESS", "reason": "Debtor address is missing or incomplete." },
+    "BE08": { "origin": "RAIL", "code": "INVALID_DEBTOR_DETAILS", "reason": "Debtor details are invalid." },
+    "BE09": { "origin": "RAIL", "code": "INVALID_CURRENCY", "reason": "Currency is not valid for the account." },
+    "BE10": { "origin": "RAIL", "code": "INVALID_DEBTOR_COUNTRY", "reason": "Debtor country code is invalid." },
+    "BE11": { "origin": "RAIL", "code": "INVALID_CREDITOR_COUNTRY", "reason": "Creditor country code is invalid." },
+    "BE16": { "origin": "RAIL", "code": "INVALID_DEBTOR_IDENTIFICATION", "reason": "Debtor identification is invalid." },
+    "BE17": { "origin": "RAIL", "code": "INVALID_CREDITOR_IDENTIFICATION", "reason": "Creditor identification is invalid." },
+
+    "CH03": { "origin": "RAIL", "code": "REQUESTED_EXECUTION_DATE_TOO_FAR", "reason": "Requested execution date is too far in the future." },
+    "CH16": { "origin": "RAIL", "code": "ELEMENT_CONTENT_FORMALLY_INCORRECT", "reason": "Element content is formally incorrect." },
+
+    "CNOR": { "origin": "RAIL", "code": "CREDITOR_BIC_NOT_FOUND", "reason": "Creditor BIC is not registered in the EBA directory." },
+    "DNOR": { "origin": "RAIL", "code": "DEBTOR_BIC_NOT_FOUND", "reason": "Debtor BIC is not registered in the EBA directory." },
+
+    "DS01": { "origin": "RAIL", "code": "ELEC_SIG_INCORRECT", "reason": "Electronic signature is incorrect." },
+    "DS02": { "origin": "RAIL", "code": "ORDER_CANCELLED", "reason": "Order has been cancelled by authorised customer." },
+    "DS24": { "origin": "RAIL", "code": "WAITING_TIME_EXPIRED", "reason": "Waiting time for authorisation has expired." },
+    "DS28": { "origin": "RAIL", "code": "NOT_ALLOWED_BOOK_TRANSFER", "reason": "Book transfer not allowed." },
+
+    "DT01": { "origin": "RAIL", "code": "INVALID_DATE", "reason": "Invalid date, for example, settlement date in the past." },
+    "DT02": { "origin": "RAIL", "code": "INVALID_CREATION_DATE", "reason": "Message creation date is invalid." },
+    "DT03": { "origin": "RAIL", "code": "INVALID_NON_PROCESSING_DATE", "reason": "Requested processing date falls on a non-processing day." },
+    "DT04": { "origin": "RAIL", "code": "FUTURE_DATE_NOT_SUPPORTED", "reason": "Future date is not supported for this transaction type." },
+    "DT05": { "origin": "RAIL", "code": "INVALID_CUTOFF_DATE", "reason": "Instruction received after cut-off date." },
+    "DT06": { "origin": "RAIL", "code": "EXECUTION_DATE_CHANGED", "reason": "Execution date has been changed to next available date." },
+
+    "ED01": { "origin": "RAIL", "code": "CORRESPONDING_BIC_INVALID", "reason": "Correspondent BIC is invalid." },
+    "ED03": { "origin": "RAIL", "code": "BALANCE_INFO_MISSING", "reason": "Balance information is missing." },
+    "ED05": { "origin": "RAIL", "code": "SETTLEMENT_FAILED", "reason": "Settlement of the transaction has failed." },
+
+    "FF01": { "origin": "RAIL", "code": "INVALID_FILE_FORMAT", "reason": "File format is incorrect." },
+    "FF03": { "origin": "RAIL", "code": "INVALID_PAYMENT_TYPE_INFO", "reason": "Payment type information is incorrect or missing." },
+    "FF04": { "origin": "RAIL", "code": "INVALID_SERVICE_LEVEL_CODE", "reason": "Service level code is invalid." },
+    "FF05": { "origin": "RAIL", "code": "INVALID_LOCAL_INSTRUMENT", "reason": "Local instrument code is invalid." },
+    "FF06": { "origin": "RAIL", "code": "INVALID_CATEGORY_PURPOSE", "reason": "Category purpose code is invalid." },
+    "FF07": { "origin": "RAIL", "code": "INVALID_PURPOSE", "reason": "Purpose code is invalid." },
+
+    "FOCR": { "origin": "RAIL", "code": "FOLLOWING_CANCELLATION_REQUEST", "reason": "Payment returned following a cancellation request." },
+
+    "FR01": { "origin": "RAIL", "code": "FRAUD_SUSPECTED", "reason": "Fraud suspected - transaction blocked at rail." },
+
+    "MD01": { "origin": "RAIL", "code": "NO_MANDATE", "reason": "No mandate found for the transaction." },
+    "MD02": { "origin": "RAIL", "code": "MISSING_MANDATORY_INFO_MANDATE", "reason": "Mandatory information for mandate is missing." },
+    "MD06": { "origin": "RAIL", "code": "REFUND_REQUEST_BY_END_CUSTOMER", "reason": "Return requested by end customer." },
+    "MD07": { "origin": "RAIL", "code": "END_CUSTOMER_DECEASED", "reason": "End customer is deceased." },
+
+    "MS02": { "origin": "RAIL", "code": "REFUSAL_BY_CUSTOMER", "reason": "Refusal by customer." },
+    "MS03": { "origin": "RAIL", "code": "REASON_NOT_SPECIFIED", "reason": "Reason not specified." },
+
+    "NARR": { "origin": "RAIL", "code": "NARRATIVE_REASON", "reason": "Reason is given in narrative form in the additional information." },
+    "NOAS": { "origin": "RAIL", "code": "NO_ANSWER_FROM_CUSTOMER", "reason": "No response from end customer." },
+
+    "RC01": { "origin": "RAIL", "code": "BANK_IDENTIFIER_INCORRECT", "reason": "Bank identifier code is incorrect." },
+    "RC07": { "origin": "RAIL", "code": "INVALID_CREDITOR_BIC", "reason": "Creditor BIC is invalid." },
+    "RC08": { "origin": "RAIL", "code": "INVALID_CLEARING_SYSTEM_MEMBER_ID", "reason": "Clearing system member ID is invalid." },
+    "RC11": { "origin": "RAIL", "code": "INVALID_INTERMEDIARY_AGENT", "reason": "Intermediary agent is invalid." },
+
+    "RJCT": { "origin": "RAIL", "code": "SWIFT_REJECTED", "reason": "Payment rejected by SWIFT or correspondent bank. See rawCode for scheme detail." },
+
+    "RR01": { "origin": "RAIL", "code": "MISSING_DEBTOR_ACCOUNT", "reason": "Regulatory reason - debtor account is missing." },
+    "RR02": { "origin": "RAIL", "code": "MISSING_DEBTOR_NAME_ADDRESS", "reason": "Regulatory reason - debtor name or address is missing." },
+    "RR03": { "origin": "RAIL", "code": "MISSING_CREDITOR_NAME_ADDRESS", "reason": "Regulatory reason - creditor name or address is missing." },
+    "RR04": { "origin": "RAIL", "code": "REGULATORY_REASON", "reason": "Transaction blocked for regulatory reasons." },
+    "RR05": { "origin": "RAIL", "code": "REGULATORY_INFO_INVALID", "reason": "Regulatory information is invalid." },
+    "RR06": { "origin": "RAIL", "code": "UNCLEAR_PURPOSE_OF_PAYMENT", "reason": "Purpose of payment is unclear." },
+    "RR07": { "origin": "RAIL", "code": "MISSING_REMITTANCE_INFO", "reason": "Remittance information is missing." },
+    "RR08": { "origin": "RAIL", "code": "MISSING_UNSTRUCTURED_REMITTANCE", "reason": "Unstructured remittance information is missing." },
+    "RR09": { "origin": "RAIL", "code": "MISSING_STRUCTURED_REMITTANCE", "reason": "Structured remittance information is missing." },
+    "RR10": { "origin": "RAIL", "code": "MISSING_ORIGINATOR_INFO", "reason": "Originator information is missing." },
+    "RR11": { "origin": "RAIL", "code": "MISSING_ULTIMATE_DEBTOR_INFO", "reason": "Ultimate debtor information is missing." },
+    "RR12": { "origin": "RAIL", "code": "INVALID_AGENT_COUNTRY", "reason": "Agent country is invalid." },
+
+    "SL01": { "origin": "RAIL", "code": "SPECIFIC_SERVICE_OFFERED_BY_CREDITOR", "reason": "Transaction rejected due to creditor-specific service level." },
+    "SL02": { "origin": "RAIL", "code": "SPECIFIC_SERVICE_OFFERED_BY_DEBTOR", "reason": "Transaction rejected due to debtor-specific service level." },
+    "SL11": { "origin": "RAIL", "code": "CREDITOR_NOT_ON_WHITELIST", "reason": "Creditor is not on the payer's whitelist." },
+    "SL12": { "origin": "RAIL", "code": "CREDITOR_ON_BLACKLIST", "reason": "Creditor is on the payer's blacklist." },
+
+    "TM01": { "origin": "RAIL", "code": "CUTOFF_TIME_EXCEEDED", "reason": "Cut-off time for settlement has been exceeded." }
+  },
+
+  "connector": {
+    "_comment": "Connector-generated codes. Platform-standard across all bank implementations.",
+
+    "TIMEOUT": {
+      "origin": "CONNECTOR",
+      "code": "RAIL_TIMEOUT",
+      "reason": "No response received from the payment rail within the allowed window."
+    },
+    "VALIDATION_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "CONNECTOR_VALIDATION_FAILED",
+      "reason": "Payment instruction failed connector-level validation before submission."
+    },
+    "UNSUPPORTED_RAIL": {
+      "origin": "CONNECTOR",
+      "code": "UNSUPPORTED_PAYMENT_METHOD",
+      "reason": "Payment method specified is not supported by this connector version."
+    },
+    "SERIALISATION_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "CONNECTOR_SERIALISATION_FAILED",
+      "reason": "Failed to serialise the payment instruction for the target rail."
+    },
+    "DESERIALISATION_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "CONNECTOR_DESERIALISATION_FAILED",
+      "reason": "Failed to deserialise the response received from the rail."
+    },
+    "CONNECTION_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "RAIL_CONNECTION_FAILED",
+      "reason": "Could not establish a connection to the payment rail endpoint."
+    },
+    "SSL_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "RAIL_SSL_FAILED",
+      "reason": "SSL handshake with the payment rail endpoint failed."
+    },
+    "SCHEMA_VALIDATION_FAILED": {
+      "origin": "CONNECTOR",
+      "code": "RESPONSE_SCHEMA_INVALID",
+      "reason": "The rail returned a response that does not match the expected schema."
+    },
+    "IDEMPOTENCY_CONFLICT": {
+      "origin": "CONNECTOR",
+      "code": "DUPLICATE_PAYMENT_ID",
+      "reason": "A payment with this paymentId has already been submitted."
+    },
+    "CONFIG_MISSING": {
+      "origin": "CONNECTOR",
+      "code": "CONNECTOR_CONFIG_ERROR",
+      "reason": "Required connector configuration is missing or invalid."
+    },
+    "RAIL_AUTH_FAILED": {
+      "origin": "CONNECTOR",
+      "code": "RAIL_AUTHENTICATION_FAILED",
+      "reason": "Authentication with the payment rail failed."
+    },
+    "INTERNAL_ERROR": {
+      "origin": "CONNECTOR",
+      "code": "CONNECTOR_INTERNAL_ERROR",
+      "reason": "An unexpected internal error occurred in the connector."
+    }
+  },
+
+  "core": {
+    "_comment": "Meridian Bank T24 core error codes. Bank-owned. Any bank adding its own core codes extends this section.",
+
+    "AC.CLOSED": {
+      "origin": "CORE",
+      "code": "ACCOUNT_CLOSED",
+      "reason": "Debtor account is closed in the core banking system."
+    },
+    "AC.BLOCKED": {
+      "origin": "CORE",
+      "code": "ACCOUNT_BLOCKED",
+      "reason": "Debtor account is blocked in the core banking system."
+    },
+    "AC.FROZEN": {
+      "origin": "CORE",
+      "code": "ACCOUNT_FROZEN",
+      "reason": "Debtor account is frozen. May be under regulatory hold."
+    },
+    "AC.DORMANT": {
+      "origin": "CORE",
+      "code": "ACCOUNT_DORMANT",
+      "reason": "Debtor account is dormant."
+    },
+    "AC.NOT.FOUND": {
+      "origin": "CORE",
+      "code": "ACCOUNT_NOT_FOUND",
+      "reason": "Debtor account was not found in the core banking system."
+    },
+    "BAL.INSUFFICIENT": {
+      "origin": "CORE",
+      "code": "INSUFFICIENT_FUNDS",
+      "reason": "Insufficient cleared funds in the debtor account."
+    },
+    "BAL.LIMIT.EXCEEDED": {
+      "origin": "CORE",
+      "code": "DAILY_LIMIT_EXCEEDED",
+      "reason": "Transaction would exceed the account daily transfer limit."
+    },
+    "BAL.UNCLEARED": {
+      "origin": "CORE",
+      "code": "UNCLEARED_FUNDS",
+      "reason": "Available balance includes uncleared funds not eligible for transfer."
+    },
+    "CUST.DECEASED": {
+      "origin": "CORE",
+      "code": "CUSTOMER_DECEASED",
+      "reason": "Account holder is recorded as deceased in the core system."
+    },
+    "CUST.SANCTIONED": {
+      "origin": "CORE",
+      "code": "CUSTOMER_SANCTIONED",
+      "reason": "Account holder has been flagged under sanctions screening."
+    },
+    "OFAC.HOLD": {
+      "origin": "CORE",
+      "code": "OFAC_HOLD",
+      "reason": "Transaction held pending OFAC/sanctions compliance review."
+    },
+    "AML.HOLD": {
+      "origin": "CORE",
+      "code": "AML_HOLD",
+      "reason": "Transaction held pending AML review."
+    },
+    "CRED.AC.NOT.FOUND": {
+      "origin": "CORE",
+      "code": "CREDITOR_ACCOUNT_NOT_FOUND",
+      "reason": "Creditor account was not found in the core banking system."
+    },
+    "CRED.AC.CLOSED": {
+      "origin": "CORE",
+      "code": "CREDITOR_ACCOUNT_CLOSED",
+      "reason": "Creditor account is closed in the core banking system."
+    },
+    "CURR.NOT.SUPPORTED": {
+      "origin": "CORE",
+      "code": "CURRENCY_NOT_SUPPORTED",
+      "reason": "Currency of the transaction is not supported for this account."
+    },
+    "CURR.MISMATCH": {
+      "origin": "CORE",
+      "code": "CURRENCY_MISMATCH",
+      "reason": "Transaction currency does not match the account currency and conversion is not permitted."
+    },
+    "FX.RATE.UNAVAILABLE": {
+      "origin": "CORE",
+      "code": "FX_RATE_UNAVAILABLE",
+      "reason": "FX rate for the required currency pair is not currently available."
+    },
+    "PMT.DUPLICATE": {
+      "origin": "CORE",
+      "code": "DUPLICATE_PAYMENT",
+      "reason": "A duplicate payment has been detected by the core system."
+    },
+    "PMT.LIMIT.SINGLE": {
+      "origin": "CORE",
+      "code": "SINGLE_TRANSACTION_LIMIT_EXCEEDED",
+      "reason": "Transaction amount exceeds the single transaction limit."
+    },
+    "PMT.LIMIT.VELOCITY": {
+      "origin": "CORE",
+      "code": "VELOCITY_LIMIT_EXCEEDED",
+      "reason": "Transaction would exceed the account velocity limit."
+    },
+    "AUTH.REQUIRED": {
+      "origin": "CORE",
+      "code": "ADDITIONAL_AUTH_REQUIRED",
+      "reason": "Transaction requires additional authorisation from the account holder."
+    },
+    "AUTH.EXPIRED": {
+      "origin": "CORE",
+      "code": "AUTHORISATION_EXPIRED",
+      "reason": "Payment authorisation has expired."
+    },
+    "AUTH.REVOKED": {
+      "origin": "CORE",
+      "code": "AUTHORISATION_REVOKED",
+      "reason": "Payment authorisation has been revoked."
+    },
+    "CORE.UNAVAILABLE": {
+      "origin": "CORE",
+      "code": "CORE_SYSTEM_UNAVAILABLE",
+      "reason": "Core banking system is temporarily unavailable."
+    },
+    "CORE.TIMEOUT": {
+      "origin": "CORE",
+      "code": "CORE_RESPONSE_TIMEOUT",
+      "reason": "Core banking system did not respond within the required window."
+    },
+    "EB-CHK-VAL-001": {
+      "origin": "CORE",
+      "code": "CORE_VALIDATION_ERROR",
+      "reason": "Core banking validation error. See rawCode for T24 detail."
+    },
+    "EB-CHK-VAL-002": {
+      "origin": "CORE",
+      "code": "CORE_VALIDATION_ERROR",
+      "reason": "Core banking validation error. See rawCode for T24 detail."
+    },
+    "EB-CHK-VAL-003": {
+      "origin": "CORE",
+      "code": "CORE_VALIDATION_ERROR",
+      "reason": "Core banking validation error. See rawCode for T24 detail."
+    },
+    "EB-PMT-REJ-001": {
+      "origin": "CORE",
+      "code": "CORE_PAYMENT_REJECTED",
+      "reason": "Payment rejected by core banking system. See rawCode for T24 detail."
+    },
+    "EB-PMT-REJ-002": {
+      "origin": "CORE",
+      "code": "CORE_PAYMENT_REJECTED",
+      "reason": "Payment rejected by core banking system. See rawCode for T24 detail."
+    },
+    "EB-ACC-FRZ-001": {
+      "origin": "CORE",
+      "code": "ACCOUNT_FROZEN",
+      "reason": "Account is frozen in the T24 core."
+    },
+    "EB-LIM-001": {
+      "origin": "CORE",
+      "code": "LIMIT_BREACH",
+      "reason": "Transaction breaches a limit configured in the T24 core."
+    },
+    "EB-LIM-002": {
+      "origin": "CORE",
+      "code": "LIMIT_BREACH",
+      "reason": "Transaction breaches a limit configured in the T24 core."
+    }
+  },
+
+  "fallback": {
+    "_comment": "Applied when the rawCode has no matching entry in rail, connector, or core sections. Always returns a structured response. rawCode is always preserved.",
+    "origin": "UNKNOWN",
+    "code": "UNRESOLVED_ERROR",
+    "reason": "Failure code could not be mapped. Raw code is preserved in rawCode field."
+  }
+}
