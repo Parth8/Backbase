@@ -61,7 +61,7 @@
 
   /* ---------- THE clustering reveal (slide 10) ---------- */
   function revealCluster(slide) {
-    const tbl = $(".tbl", slide);
+    const tbl = $(".js-reveal", slide) || $(".tbl", slide);
     if (!tbl) return;
     const cells = $$(".cell", tbl);
     clearTimers(tbl);
@@ -166,7 +166,7 @@
   const ROUTINES = {
     s2:  runCounters,
     s3:  drawArchitecture,
-    s5:  runCounters,
+    s6:  runCounters,
     s7:  revealCluster,
     s9:  revealLogs,
     s14: drawRoadmap
