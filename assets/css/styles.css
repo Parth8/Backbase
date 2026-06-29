@@ -859,9 +859,16 @@ mark.rust { background: var(--rust-soft); }
   .draw-fade, .draw-pop { opacity: 1 !important; transform: none !important; }
 }
 
-/* =========================================================
-   Artifact links — connect deck to real repo files
-   ========================================================= */
+/* pulse for dashboard live indicator */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* reduced motion: kill pulse */
+@media (prefers-reduced-motion: reduce) {
+  #dash-pulse { animation: none; }
+}
 .artifact {
   display: inline-flex;
   align-items: center;

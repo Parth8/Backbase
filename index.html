@@ -290,7 +290,7 @@
     <div class="eyebrow enter" data-d="1">The Investigation · Slicing the 47</div>
     <h2 class="display display--m enter" data-d="1">A real read takes more than one cut</h2>
     <p class="prose enter" data-d="2" style="margin:14px 0 24px; max-width:78ch;">
-      I load the 47 transactions into a company approved AI tool and start slicing for analysis. The first cut I try is the obvious one, by rail.
+      I load the 47 into a notebook and start slicing. The first cut I try is the obvious one, by rail.
       It is useful but it does not fully explain the mess. The second cut, by origin, is the one that lands.
     </p>
 
@@ -453,6 +453,98 @@ it through raw</span><span class="code__line"><span class="t-com">returned to co
   </div>
 </section>
 
+<!-- SLIDE 10b - Payments monitoring dashboard -->
+<section class="slide" id="s10b" style="padding-top:clamp(48px,6vh,72px); padding-bottom:clamp(80px,10vh,104px);">
+  <div class="wrap wrap--wide" style="max-width:1280px;">
+
+    <!-- Dashboard chrome -->
+    <div style="background:var(--paper-2); border:1px solid var(--line-strong); border-radius:8px; overflow:hidden; font-family:var(--mono);">
+
+      <!-- Top bar -->
+      <div style="background:var(--paper-4); border-bottom:1px solid var(--line-strong); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="width:9px;height:9px;border-radius:50%;background:var(--pine);display:inline-block;"></span>
+          <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink);">Grand Central · Error Intelligence Dashboard</span>
+          <span style="font-size:11px; color:var(--ink-faint);">Meridian Bank NV · v3 Connector · Production</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11px; color:var(--ink-soft);">Period</span>
+          <select id="dash-period" style="font-family:var(--mono); font-size:12px; background:var(--paper-2); border:1px solid var(--line-strong); border-radius:4px; padding:4px 28px 4px 10px; color:var(--ink); cursor:pointer; appearance:none; -webkit-appearance:none; background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6%22 fill=%22%236F6358%22/></svg>'); background-repeat:no-repeat; background-position:right 8px center;">
+            <option value="7">Last 7 days</option>
+            <option value="14">Last 14 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+          <span style="font-size:11px; color:var(--ink-faint); letter-spacing:0.06em;">LIVE</span>
+          <span id="dash-pulse" style="width:7px;height:7px;border-radius:50%;background:var(--pine);display:inline-block;animation:pulse 2s ease-in-out infinite;"></span>
+        </div>
+      </div>
+
+      <!-- Stat row -->
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); border-bottom:1px solid var(--line);">
+        <div id="stat-total" class="dash-stat" style="padding:14px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;">Total Transactions</div>
+          <div style="font-family:var(--display); font-size:26px; font-weight:700; color:var(--ink); letter-spacing:-0.02em;" id="v-total">10,000</div>
+        </div>
+        <div class="dash-stat" style="padding:14px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;">Success</div>
+          <div style="font-family:var(--display); font-size:26px; font-weight:700; color:var(--pine); letter-spacing:-0.02em;" id="v-success">4,000</div>
+        </div>
+        <div class="dash-stat" style="padding:14px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;">Failures</div>
+          <div style="font-family:var(--display); font-size:26px; font-weight:700; color:var(--rust); letter-spacing:-0.02em;" id="v-fail">6,000</div>
+        </div>
+        <div class="dash-stat" style="padding:14px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;">Mapped</div>
+          <div style="font-family:var(--display); font-size:26px; font-weight:700; color:var(--pine); letter-spacing:-0.02em;" id="v-mapped">5,000</div>
+          <div style="font-size:10px; color:var(--ink-soft); margin-top:2px;" id="v-mapped-pct">83%</div>
+        </div>
+        <div class="dash-stat" style="padding:14px 18px;">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;">Unmapped</div>
+          <div style="font-family:var(--display); font-size:26px; font-weight:700; color:var(--rust); letter-spacing:-0.02em;" id="v-unmapped">1,000</div>
+          <div style="font-size:10px; color:var(--rust); margin-top:2px;" id="v-unmapped-pct">17% · needs review</div>
+        </div>
+      </div>
+
+      <!-- Three charts -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; border-bottom:1px solid var(--line);">
+
+        <!-- Chart 1: Failure by Origin -->
+        <div style="padding:16px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:14px;">Failures by Origin</div>
+          <canvas id="chart-origin" width="280" height="150" style="width:100%; height:150px;"></canvas>
+        </div>
+
+        <!-- Chart 2: Mapped vs Unmapped over time -->
+        <div style="padding:16px 18px; border-right:1px solid var(--line);">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:14px;">Mapped vs Unmapped · Daily</div>
+          <canvas id="chart-trend" width="280" height="150" style="width:100%; height:150px;"></canvas>
+        </div>
+
+        <!-- Chart 3: Top unmapped codes -->
+        <div style="padding:16px 18px;">
+          <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px;">Top Unmapped Codes · Needs Mapping</div>
+          <div id="chart-unmapped" style="display:grid; gap:7px;"></div>
+        </div>
+
+      </div>
+
+      <!-- Footer bar -->
+      <div style="padding:9px 20px; display:flex; align-items:center; justify-content:space-between; font-size:10px; color:var(--ink-faint); letter-spacing:0.08em;">
+        <span>Source: meridian_production_logs_v3.csv · 10,000 rows · refreshed 2 min ago</span>
+        <span style="color:var(--rust);">⚠ 1,000 unmapped codes require config update</span>
+      </div>
+
+    </div><!-- end dashboard chrome -->
+
+    <div style="display:flex; gap:24px; margin-top:14px; flex-wrap:wrap;">
+      <p class="marg" style="margin:0; max-width:52ch;"><span class="marg__label">What this is</span>At 47 failures, a PM reads a notebook. At 10,000, the platform needs to do the reading. This dashboard classifies every failure automatically using the config as the key - mapped codes route cleanly, unmapped codes surface for review.</p>
+      <p class="marg" style="margin:0; max-width:44ch;"><span class="marg__label">The unmapped rate</span>17% of failures have no config entry. Each one is a gap. The platform surfaces them - the connector PM reviews and promotes a mapping to baseline, so the next bank never sees it unresolved.</p>
+    </div>
+
+  </div>
+</section>
+
 <!-- ===================================================== -->
 <!-- ACT 4 - THE DECISION                                   -->
 <!-- ===================================================== -->
@@ -563,7 +655,7 @@ it through raw</span><span class="code__line"><span class="t-com">returned to co
       </div>
     </div>
     <div class="artifact__group enter" data-d="4">
-      <a class="artifact" href="resources/config-viewer.html" target="_blank" rel="noopener">config-viewer.html</a>
+      <a class="artifact" href="resources/gc_error_mapping_config_v3.json" target="_blank" rel="noopener">gc_error_mapping_config_v3.json</a>
     </div>
   </div>
 </section>
@@ -715,9 +807,260 @@ it through raw</span><span class="code__line"><span class="t-com">returned to co
 </div>
 
 <div class="meta" aria-hidden="true">
-  <div class="meta__num"><b>01</b> / 15</div>
+  <div class="meta__num"><b>01</b> / 16</div>
   <div class="meta__act">Setting the Scene</div>
 </div>
+
+<script>
+// ---- Dashboard data (derived from meridian_production_logs_v3.csv) ----
+// Full dataset: 10000 rows, 90-day window (Mar-May 2025)
+// Pre-aggregated by period for the filter dropdown
+
+const DASH = {
+  "7":  { total:779,  success:311, fail:468, mapped:388, unmapped:80,
+          origin:{ RAIL:202, CONNECTOR:70,  CORE:116, UNKNOWN:80  },
+          trend: gen_trend(7,  388, 80),
+          top_unmapped: [["AC.PEND.REVIEW",34],["EB-PRIV-001",29],["EB-PRIV-002",17]] },
+  "14": { total:1541, success:617, fail:924, mapped:767, unmapped:157,
+          origin:{ RAIL:399, CONNECTOR:139, CORE:229, UNKNOWN:157 },
+          trend: gen_trend(14, 767, 157),
+          top_unmapped: [["AC.PEND.REVIEW",67],["EB-PRIV-001",57],["EB-PRIV-002",33]] },
+  "30": { total:3289, success:1316,fail:1973,mapped:1638,unmapped:335,
+          origin:{ RAIL:853, CONNECTOR:297, CORE:488, UNKNOWN:335 },
+          trend: gen_trend(30, 1638, 335),
+          top_unmapped: [["AC.PEND.REVIEW",142],["EB-PRIV-001",122],["EB-PRIV-002",71]] },
+  "90": { total:10000,success:4000,fail:6000,mapped:5000,unmapped:1000,
+          origin:{ RAIL:2600,CONNECTOR:900, CORE:1500,UNKNOWN:1000 },
+          trend: gen_trend(90, 5000, 1000),
+          top_unmapped: [["AC.PEND.REVIEW",424],["EB-PRIV-001",364],["EB-PRIV-002",212]] },
+};
+
+function gen_trend(days, mapped, unmapped) {
+  // Produce day-by-day arrays with slight noise
+  const m = [], u = [];
+  for (let i = 0; i < days; i++) {
+    const base_m = Math.round(mapped / days);
+    const base_u = Math.round(unmapped / days);
+    m.push(base_m + Math.round((Math.random()-0.5)*base_m*0.4));
+    u.push(base_u + Math.round((Math.random()-0.5)*base_u*0.6));
+  }
+  return { mapped: m, unmapped: u };
+}
+
+// CSS variable values (warm palette)
+const PINE    = "#35503F";
+const PINE_S  = "rgba(53,80,63,0.18)";
+const SAFFRON = "#C2871B";
+const RUST    = "#B0512E";
+const RUST_S  = "rgba(176,81,46,0.18)";
+const INK_S   = "#6F6358";
+const INK_F   = "#9A8E7F";
+const LINE    = "rgba(42,33,28,0.13)";
+
+let chartOrigin, chartTrend;
+
+function fmt(n) { return n.toLocaleString(); }
+
+function renderDash(period) {
+  const d = DASH[period];
+
+  // Stat cards
+  document.getElementById("v-total").textContent    = fmt(d.total);
+  document.getElementById("v-success").textContent  = fmt(d.success);
+  document.getElementById("v-fail").textContent     = fmt(d.fail);
+  document.getElementById("v-mapped").textContent   = fmt(d.mapped);
+  document.getElementById("v-unmapped").textContent = fmt(d.unmapped);
+
+  const mappedPct  = Math.round(d.mapped  / d.fail * 100);
+  const unmapPct   = Math.round(d.unmapped/ d.fail * 100);
+  document.getElementById("v-mapped-pct").textContent   = mappedPct + "% of failures";
+  document.getElementById("v-unmapped-pct").textContent = unmapPct + "% · needs review";
+
+  renderOriginChart(d.origin);
+  renderTrendChart(d.trend, period);
+  renderUnmappedList(d.top_unmapped, d.unmapped);
+}
+
+// ---- Chart 1: Horizontal bar — failures by origin ----
+function renderOriginChart(origin) {
+  const canvas = document.getElementById("chart-origin");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth; const H = canvas.offsetHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const data = [
+    { label:"RAIL",      val: origin.RAIL,      color: PINE    },
+    { label:"CORE",      val: origin.CORE,      color: SAFFRON },
+    { label:"CONNECTOR", val: origin.CONNECTOR, color: INK_S   },
+    { label:"UNKNOWN",   val: origin.UNKNOWN,   color: RUST    },
+  ];
+  const total = data.reduce((s,d)=>s+d.val,0);
+  const max   = Math.max(...data.map(d=>d.val));
+
+  const labelW = 76; const barH = 16; const gap = 8;
+  const barW   = W - labelW - 52;
+  let y = 10;
+
+  data.forEach(item => {
+    // label
+    ctx.font = `500 11px "Spline Sans Mono", monospace`;
+    ctx.fillStyle = INK_S;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.fillText(item.label, 0, y + barH/2);
+
+    // bar background
+    ctx.fillStyle = LINE;
+    roundRect(ctx, labelW, y, barW, barH, 3);
+    ctx.fill();
+
+    // bar fill
+    const fillW = Math.max(4, (item.val / max) * barW);
+    ctx.fillStyle = item.color;
+    roundRect(ctx, labelW, y, fillW, barH, 3);
+    ctx.fill();
+
+    // value
+    ctx.font = `600 11px "Spline Sans Mono", monospace`;
+    ctx.fillStyle = "#2A211C";
+    ctx.textAlign = "left";
+    ctx.fillText(item.val.toLocaleString(), labelW + fillW + 6, y + barH/2);
+
+    y += barH + gap;
+  });
+}
+
+// ---- Chart 2: Stacked area — mapped vs unmapped over time ----
+function renderTrendChart(trend, period) {
+  const canvas = document.getElementById("chart-trend");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth; const H = canvas.offsetHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const days = trend.mapped.length;
+  const combined = trend.mapped.map((m,i) => m + trend.unmapped[i]);
+  const maxVal = Math.max(...combined) * 1.15;
+  const padL = 4; const padR = 4; const padT = 8; const padB = 22;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  function xAt(i) { return padL + (i / (days-1)) * chartW; }
+  function yAt(v) { return padT + chartH - (v / maxVal) * chartH; }
+
+  // Draw gridlines (subtle)
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 0.8;
+  for (let g = 0; g <= 3; g++) {
+    const gy = padT + (g/3)*chartH;
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W-padR, gy); ctx.stroke();
+  }
+
+  // Fill: mapped (pine)
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(trend.mapped[0]));
+  for (let i=1;i<days;i++) ctx.lineTo(xAt(i), yAt(trend.mapped[i]));
+  ctx.lineTo(xAt(days-1), yAt(0)); ctx.lineTo(xAt(0), yAt(0)); ctx.closePath();
+  ctx.fillStyle = PINE_S; ctx.fill();
+
+  // Fill: unmapped on top (rust)
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(combined[0]));
+  for (let i=1;i<days;i++) ctx.lineTo(xAt(i), yAt(combined[i]));
+  ctx.lineTo(xAt(days-1), yAt(trend.mapped[days-1]));
+  for (let i=days-2;i>=0;i--) ctx.lineTo(xAt(i), yAt(trend.mapped[i]));
+  ctx.closePath();
+  ctx.fillStyle = RUST_S; ctx.fill();
+
+  // Lines
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = PINE;
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(trend.mapped[0]));
+  for (let i=1;i<days;i++) ctx.lineTo(xAt(i), yAt(trend.mapped[i]));
+  ctx.stroke();
+
+  ctx.strokeStyle = RUST;
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(combined[0]));
+  for (let i=1;i<days;i++) ctx.lineTo(xAt(i), yAt(combined[i]));
+  ctx.stroke();
+
+  // X axis labels (first, mid, last)
+  ctx.font = `10px "Spline Sans Mono", monospace`;
+  ctx.fillStyle = INK_F;
+  ctx.textBaseline = "top";
+  const labels = ["Mar 1", period==7?"Mar 7":period==14?"Mar 14":period==30?"Mar 30":"May 30"];
+  ctx.textAlign = "left";  ctx.fillText(labels[0], padL, H - padB + 6);
+  ctx.textAlign = "right"; ctx.fillText(labels[1], W - padR, H - padB + 6);
+
+  // Legend
+  ctx.font = `10px "Spline Sans Mono", monospace`;
+  ctx.textBaseline = "middle";
+  const ly = 3;
+  ctx.fillStyle = PINE; ctx.fillRect(padL, ly, 12, 8);
+  ctx.fillStyle = INK_S; ctx.textAlign = "left";
+  ctx.fillText("mapped", padL + 15, ly + 4);
+  ctx.fillStyle = RUST; ctx.fillRect(padL + 68, ly, 12, 8);
+  ctx.fillStyle = INK_S;
+  ctx.fillText("unmapped", padL + 83, ly + 4);
+}
+
+// ---- Chart 3: Top unmapped codes list ----
+function renderUnmappedList(codes, total) {
+  const el = document.getElementById("chart-unmapped");
+  if (!el) return;
+  const max = codes[0][1];
+  el.innerHTML = codes.map(([code, count]) => {
+    const pct = Math.round(count/total*100);
+    const barW = Math.round(count/max*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+        <span style="font-family:var(--mono);font-size:11.5px;color:var(--rust);">${code}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">${count.toLocaleString()} · ${pct}%</span>
+      </div>
+      <div style="height:8px;background:rgba(42,33,28,0.1);border-radius:2px;overflow:hidden;">
+        <div style="height:100%;width:${barW}%;background:var(--rust);border-radius:2px;transition:width 0.4s ease;"></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ---- Helpers ----
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+// ---- Init ----
+const periodSelect = document.getElementById("dash-period");
+periodSelect.addEventListener("change", () => renderDash(periodSelect.value));
+
+// Render when slide enters viewport
+window.addEventListener("slide:enter", (e) => {
+  if (e.detail.id === "s10b") {
+    // small delay for layout to settle
+    setTimeout(() => renderDash(periodSelect.value), 220);
+  }
+});
+
+// Also render on first load if s10b is active
+if (document.getElementById("s10b").classList.contains("is-active")) {
+  setTimeout(() => renderDash(periodSelect.value), 300);
+}
+</script>
 
 <script src="assets/js/presentation.js"></script>
 <script src="assets/js/animations.js"></script>

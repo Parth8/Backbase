@@ -14,10 +14,10 @@
   const ACTS = [
     { name: "Setting the Scene", start: 0 },   // S1-3
     { name: "The Crisis",        start: 3 },   // S4-5
-    { name: "The Investigation", start: 5 },   // S6-10
-    { name: "The Decision",      start: 10 },  // S11-12
-    { name: "The Fix",           start: 12 },  // S13-14
-    { name: "Resolution",        start: 14 }   // S15
+    { name: "The Investigation", start: 5 },   // S6-10b
+    { name: "The Decision",      start: 11 },  // S11-12
+    { name: "The Fix",           start: 13 },  // S13-14
+    { name: "Resolution",        start: 15 }   // S15
   ];
 
   const navLeft  = document.querySelector(".navzone--left");

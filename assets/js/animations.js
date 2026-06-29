@@ -164,12 +164,12 @@
 
   /* ---------- dispatch table ---------- */
   const ROUTINES = {
-    s2:  runCounters,
-    s3:  drawArchitecture,
-    s6:  runCounters,
-    s7:  revealCluster,
-    s9:  revealLogs,
-    s14: drawRoadmap
+    s2:    runCounters,
+    s3:    drawArchitecture,
+    s6:    runCounters,
+    s7:    revealCluster,
+    s9:    revealLogs,
+    s14:   drawRoadmap
   };
 
   window.addEventListener("slide:enter", (e) => {
